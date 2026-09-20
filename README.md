@@ -35,7 +35,9 @@ Zero dependencies. Works on numbers you already have.
 Pick the max of 30 noisy scores and you get a high number even when all 30
 options are identical. The more you try, the higher it goes.
 
-**How many points you get for free** (baseline 0.60, no real difference between candidates):
+![points a search gains when no variant is actually better](docs/floor.png)
+
+**The same thing as a table** (baseline 0.60, no real difference between candidates):
 
 | eval set | 5 tries | 10 tries | 30 tries | 100 tries |
 | ---: | ---: | ---: | ---: | ---: |
@@ -126,6 +128,24 @@ confirm(baseline_hits, new_hits)           # -> .wins .losses .p_value .confirme
 selection_floor(k, n, p)                   # points a k-candidate search gets free
 eb_shrink(scores, n)                       # de-biased best
 ```
+
+## Try it in 30 seconds
+
+```bash
+python3 examples/quickstart.py     # no downloads, no key
+```
+
+Two tuning sessions that look identical from the outside. In one, every
+variant is the same and the gain is pure luck. In the other, one variant is
+genuinely better. Same number of tries, same eval set, both end higher.
+
+## Limits
+
+`selection_floor` assumes independent candidates, one evaluation each, and a
+binomial metric. Correlated variants, staged evaluation with promotion
+thresholds, or a heavy-tailed metric all push the real floor **higher** than
+it reports. The error is always in the same direction: **a gain that fails
+this test fails it for certain.** A gain that passes still needs `confirm()`.
 
 ## Notes
 

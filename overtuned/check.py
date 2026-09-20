@@ -69,6 +69,27 @@ def selection_floor(k: int, n: int, p: float, reps: int = 4000, seed: int = 0) -
     Each candidate's score is an n-example estimate of the same true p, so
     the spread between them is sampling noise and nothing else. The mean of
     the maximum, minus p, is what a search of this size reports for free.
+
+    WHAT THIS ASSUMES, and when the number it returns is too low:
+
+    * **Independent candidates.** Real variants are often edits of each
+      other, so their errors correlate. Correlation usually reduces the
+      spread of the maximum, which makes this estimate conservative -- but
+      when every candidate is scored on the SAME fixed eval set, part of the
+      per-candidate noise becomes a run-level term (that eval set can itself
+      be lucky) which does not average out at all.
+    * **One evaluation per candidate.** Staged or cascaded evaluation --
+      score everything cheaply, promote a few, re-score the survivors -- is
+      a different and usually worse object, because the reported maximum
+      tends to come from whichever rung most candidates stopped at, which is
+      the cheapest and noisiest one. If your loop has promotion thresholds,
+      treat this as a lower bound.
+    * **A binomial metric.** Scores here are means of per-example 0/1
+      outcomes. For an unbounded or heavy-tailed metric, the floor is
+      typically higher than this returns.
+
+    In every one of those cases the error is in the same direction: the real
+    floor is higher, so a gain that fails this test fails it for certain.
     """
     rng = random.Random(seed)
     p = min(max(p, 1e-3), 1 - 1e-3)
