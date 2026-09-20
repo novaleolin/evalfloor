@@ -7,10 +7,12 @@ Both are arithmetic on numbers your existing tuning loop already produced:
 no model, no API key, no dependencies. The schema optimiser in `optimize`
 is the same machinery applied to itself, and needs the extras.
 """
-from .check import Check, Confirm, check, confirm, eb_shrink, selection_floor
+from .check import (Check, Confirm, StagedFloor, check, confirm, eb_shrink,
+                    selection_floor, staged_floor)
 
 __version__ = "0.1.0"
-__all__ = ["check", "confirm", "Check", "Confirm", "selection_floor", "eb_shrink"]
+__all__ = ["check", "confirm", "Check", "Confirm", "selection_floor",
+           "eb_shrink", "staged_floor", "StagedFloor"]
 
 
 def __getattr__(name):  # noqa: D401

@@ -183,3 +183,52 @@ def test_importing_the_package_needs_no_heavy_dependency():
     r = subprocess.run([sys.executable, "-c", code], capture_output=True,
                        cwd=str(Path(__file__).resolve().parents[1]))
     assert r.returncode == 0, r.stderr.decode()[-400:]
+
+
+# --- staged evaluation: the floor of a loop that promotes between stages ---
+
+def test_staged_floor_matches_the_stage_the_max_comes_from():
+    """A strict gate makes the headline come from the cheap stage, so the
+    floor tracks THAT stage's size, not the expensive one you pay for."""
+    from overtuned import selection_floor, staged_floor
+    r = staged_floor([(10, 0.0), (60, 0.40), (200, None)], k=30, p=0.20,
+                     nested=True, reps=600)
+    assert r.headline_stage[0] == 60
+    assert r.from_stage[1] > 0.9
+    cheap = selection_floor(30, 60, 0.20, reps=1500)
+    dear = selection_floor(30, 200, 0.20, reps=1500)
+    assert abs(r.floor - cheap) < 0.02, (r.floor, cheap)
+    assert r.floor > dear * 1.5, (r.floor, dear)
+
+
+def test_a_passable_gate_moves_the_headline_to_the_dear_stage():
+    """When candidates clear the gate, the expensive stage does its job.
+
+    Compared against the single-stage floor for that stage rather than a
+    constant: at p=0.75 the floor for 30 candidates on 200 examples is about
+    +0.06 on its own, so a fixed "< 0.05" would fail a correct result.
+    """
+    from overtuned import selection_floor, staged_floor
+    r = staged_floor([(10, 0.0), (60, 0.40), (200, None)], k=30, p=0.75,
+                     nested=True, reps=600)
+    assert r.headline_stage[0] == 200
+    assert r.from_stage[2] > 0.9
+    dear = selection_floor(30, 200, 0.75, reps=1500)
+    assert abs(r.floor - dear) < 0.02, (r.floor, dear)
+
+
+def test_nesting_the_confirmation_set_costs_something():
+    """Re-using the selection examples inside the confirmation set can only
+    dilute selection noise, never remove it."""
+    from overtuned import staged_floor
+    kw = dict(k=30, p=0.50, reps=900)
+    nested = staged_floor([(60, 0.45), (200, None)], nested=True, **kw).floor
+    fresh = staged_floor([(60, 0.45), (200, None)], nested=False, **kw).floor
+    assert nested > fresh, (nested, fresh)
+
+
+def test_single_stage_staged_floor_agrees_with_the_plain_one():
+    from overtuned import selection_floor, staged_floor
+    a = staged_floor([(200, None)], k=20, p=0.6, reps=1500).floor
+    b = selection_floor(20, 200, 0.6, reps=1500)
+    assert abs(a - b) < 0.01, (a, b)

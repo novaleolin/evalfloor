@@ -192,3 +192,103 @@ def confirm(baseline_hits, new_hits) -> Confirm:
     lo = min(wins, losses)
     p = min(1.0, 2 * sum(math.comb(d, i) for i in range(lo + 1)) / (2 ** d))
     return Confirm(wins, losses, p)
+
+
+# ------------------------------------------------------- staged evaluation
+#
+# Everything above assumes each candidate was evaluated once. Many real
+# loops are staged instead: score everything on something cheap, promote the
+# survivors to something dearer, report the best. That is a different and
+# usually worse object, for a reason that is not obvious.
+
+@dataclass
+class StagedFloor:
+    floor: float
+    reported: float
+    baseline: float
+    stages: list
+    #: fraction of runs whose reported maximum came from each stage
+    from_stage: dict
+
+    @property
+    def headline_stage(self) -> tuple:
+        return self.stages[max(self.from_stage, key=self.from_stage.get)]
+
+    def __str__(self) -> str:
+        n, _t = self.headline_stage
+        rows = [
+            f"  stages                {' -> '.join(str(n) for n, _ in self.stages)}"
+            f" examples",
+            f"  baseline              {self.baseline:.3f}",
+            f"  reported best         {self.reported:.3f}",
+            f"  selection floor       {self.floor:+.3f}   <- with NO real "
+            f"difference between candidates",
+            "",
+            "  the reported best came from:",
+        ]
+        for i, (sn, st_) in enumerate(self.stages):
+            f = self.from_stage.get(i, 0.0)
+            thr = "" if st_ is None else f", promote above {st_:.0%}"
+            rows.append(f"    stage {i + 1}: {sn:>4} examples{thr:<22}  {f:>5.0%}")
+        rows += [
+            "",
+            f"  Your headline number is coming from the {n}-example stage "
+            f"{self.from_stage[max(self.from_stage, key=self.from_stage.get)]:.0%}"
+            f" of the time.",
+        ]
+        if n != self.stages[-1][0]:
+            rows.append(
+                f"  That is not the {self.stages[-1][0]}-example stage you pay for. "
+                f"A strict\n  promotion threshold means few candidates ever reach "
+                f"it, so the max\n  is taken over scores from a cheaper, noisier "
+                f"stage.")
+        return "\n".join(rows)
+
+
+def staged_floor(stages, k: int, p: float, nested: bool = False,
+                 reps: int = 1500, seed: int = 0) -> StagedFloor:
+    """Selection floor for a loop that evaluates in cheap-then-dear stages.
+
+    `stages` is [(n_examples, promote_above), ...] with the last threshold
+    None -- e.g. [(10, 0.0), (60, 0.4), (200, None)] for "smoke test on 10,
+    estimate on 60, confirm the promising ones on 200". `k` is how many
+    candidates went through, `p` their common true score.
+
+    Set `nested=True` if the confirmation set CONTAINS the earlier one --
+    200 examples of which 60 are the ones selection was made on. Re-using
+    them means confirmation can only dilute the selection noise, never
+    remove it.
+
+    The number that matters here is usually not the floor itself but the
+    breakdown underneath it. A promotion threshold well above the true score
+    means almost nothing is promoted, so the reported maximum is a maximum
+    over scores from whichever stage candidates actually stopped at -- the
+    cheapest and noisiest one. The expensive stage the loop pays for is not
+    where its headline number comes from.
+    """
+    rng = random.Random(seed)
+    stages = [(int(n), t) for n, t in stages]
+    best_vals, best_stage = [], []
+    for _ in range(reps):
+        recorded = []
+        for _c in range(max(1, k)):
+            prev_n, prev_hits, idx = 0, 0, 0
+            for idx, (n, thr) in enumerate(stages):
+                if nested and prev_n:
+                    new = max(0, n - prev_n)
+                    hits = prev_hits + sum(rng.random() < p for _ in range(new))
+                else:
+                    hits = sum(rng.random() < p for _ in range(n))
+                score = hits / n
+                prev_n, prev_hits = n, hits
+                if thr is None or score <= thr:
+                    break
+            recorded.append((score, idx))
+        top = max(recorded)
+        best_vals.append(top[0])
+        best_stage.append(top[1])
+    mean_best = st.mean(best_vals)
+    counts = {i: best_stage.count(i) / len(best_stage)
+              for i in range(len(stages)) if best_stage.count(i)}
+    return StagedFloor(floor=mean_best - p, reported=mean_best, baseline=p,
+                       stages=stages, from_stage=counts)

@@ -126,6 +126,7 @@ from overtuned import check, confirm, selection_floor, eb_shrink
 check(scores, n_examples, baseline=None)   # -> .apparent_gain .floor .shrunk .beats_floor
 confirm(baseline_hits, new_hits)           # -> .wins .losses .p_value .confirmed .underpowered
 selection_floor(k, n, p)                   # points a k-candidate search gets free
+staged_floor(stages, k, p, nested=False)   # same, for cheap-then-dear loops
 eb_shrink(scores, n)                       # de-biased best
 ```
 
@@ -139,13 +140,44 @@ Two tuning sessions that look identical from the outside. In one, every
 variant is the same and the gain is pure luck. In the other, one variant is
 genuinely better. Same number of tries, same eval set, both end higher.
 
+## If your loop evaluates in stages
+
+Score everything on something cheap, promote the survivors to something
+dearer, report the best. Common, sensible, and worse than it looks:
+
+```python
+overtuned.staged_floor(
+    stages=[(10, 0.0), (60, 0.40), (200, None)],   # (examples, promote above)
+    k=30, p=0.20, nested=True)                     # 30 candidates, true score 0.20
+```
+```
+  stages                10 -> 60 -> 200 examples
+  reported best         0.310
+  selection floor       +0.110   <- with NO real difference between candidates
+
+  the reported best came from:
+    stage 1:   10 examples, promote above 0%         0%
+    stage 2:   60 examples, promote above 40%      100%
+    stage 3:  200 examples                           0%
+
+  Your headline number is coming from the 60-example stage 100% of the time.
+  That is not the 200-example stage you pay for.
+```
+
+The gate is set at 40% and the candidates are worth 20%, so **almost nothing
+is ever promoted**. The reported maximum is a maximum over 60-example scores.
+Its floor is **+0.110** — the floor of the cheap stage, not the +0.059 of the
+200-example stage the loop is paying for.
+
+The stricter your promotion threshold, the more this bites.
+
 ## Limits
 
 `selection_floor` assumes independent candidates, one evaluation each, and a
-binomial metric. Correlated variants, staged evaluation with promotion
-thresholds, or a heavy-tailed metric all push the real floor **higher** than
-it reports. The error is always in the same direction: **a gain that fails
-this test fails it for certain.** A gain that passes still needs `confirm()`.
+binomial metric. Correlated variants or a heavy-tailed metric push the real
+floor **higher** than it reports; staged evaluation has its own function
+above. The error is always in the same direction: **a gain that fails this
+test fails it for certain.** A gain that passes still needs `confirm()`.
 
 ## Notes
 
