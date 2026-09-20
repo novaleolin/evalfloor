@@ -1,213 +1,135 @@
 # overtuned
 
-**Your eval score went up. Did anything actually get better?**
+**Check if your eval improvement is real.**
 
-You tried 30 prompt variants and kept the best. The number moved from 0.62 to
-0.70. Here is the thing nobody tells you: **a 30-candidate search reports about
-+0.07 on data where every candidate is equally good.** Not sometimes — on
-average.
+You tried 30 prompts and kept the best one. Score went 0.62 → 0.69.
 
 ```python
 import overtuned
-
-print(overtuned.check(scores=my_30_scores, n_examples=200))
+overtuned.check(scores=my_30_scores, n_examples=200)
 ```
-```
-  candidates tried      30
-  examples each         200
 
+```
   baseline              0.620
-  best                  0.702   apparent gain +0.082
-  selection floor       +0.069   <- what a 30-candidate search reports on pure noise
-  best, de-biased       0.632
+  best                  0.685   apparent gain +0.065
+  selection floor       +0.069   <- a 30-candidate search scores this much on pure noise
+  best, de-biased       0.616
 
-  ABOVE THE FLOOR -- but it was still measured on the data you searched over;
-                     confirm it on held-out data with confirm()
+  BELOW THE FLOOR -- this search has not shown anything
 ```
 
-That took two numbers you already have. No model, no API key, no rerun.
+All 6.5 points were luck. In that run every one of the 30 prompts was
+**exactly as good as the others** — the spread was sampling noise, and the
+search found the luckiest sample.
+
+```bash
+pip install overtuned
+```
+
+Zero dependencies. Works on numbers you already have.
 
 ---
 
-## Where this came from
+## Why this happens
 
-I was measuring something else: whether self-improving AI systems actually
-improve. Several publish a curve — best-in-archive score, rising over
-iterations — and I wanted to know how much of the rise was real.
+Pick the max of 30 noisy scores and you get a high number even when all 30
+options are identical. The more you try, the higher it goes.
 
-So I reimplemented one system's published selection protocol exactly, and fed
-it candidates that were **all equally good, by construction**. The curve went
-up anyway. Under a strict null of zero real improvement, that protocol still
-reported a gain of double digits, purely from selecting the luckiest candidate
-out of a growing pool.
+**How many points you get for free** (baseline 0.60, no real difference between candidates):
 
-Then the obvious thought: this is not a quirk of self-improving systems. It is
-what happens to **anyone who tries several things against an eval set and
-keeps the best one** — which is everyone tuning a prompt, a threshold, a
-retrieval config, an agent scaffold. The statistics are textbook. The tooling
-to check for it, in this ecosystem, did not exist.
+| eval set | 5 tries | 10 tries | 30 tries | 100 tries |
+| ---: | ---: | ---: | ---: | ---: |
+| 50 | +8.0 | +10.4 | +13.9 | +16.8 |
+| 100 | +5.6 | +7.5 | +10.0 | +12.1 |
+| **200** | +4.1 | **+5.3** | **+7.0** | +8.6 |
+| 500 | +2.6 | +3.4 | +4.5 | +5.5 |
+| 2000 | +1.3 | +1.7 | +2.2 | +2.7 |
 
-So here it is.
+200 eval examples and 30 variants is a normal Tuesday. That row is +7.0.
 
 ---
 
 ## Two functions
 
-### `check()` — did the search prove anything?
+**`check(scores, n_examples)`** — how much of your best score is luck.
 
-Takes the scores your loop already produced.
-
-```python
-overtuned.check(scores, n_examples)
-```
-
-It reports three things your loop does not:
-
-- **the selection floor** — what a search of that size reports on pure noise.
-  If your gain is under it, your search has shown nothing.
-- **the de-biased best** — every candidate shrunk toward their mean in
-  proportion to how much of its lead sampling noise alone explains. Nothing
-  is fitted.
-- a verdict that says which of those two you are in.
-
-### `confirm()` — does the winner survive data it was not chosen on?
+**`confirm(baseline_hits, new_hits)`** — does the winner hold up on held-out data?
 
 ```python
-overtuned.confirm(baseline_correct, winner_correct)   # per-example outcomes
+overtuned.confirm(baseline_correct, winner_correct)   # per-example, True/False
+```
+```
+  held-out   13 fixed / 3 broken   sign test p=0.0213
+  CONFIRMED -- the winner is better on data it was not selected on
 ```
 
-Paired, because an aggregate difference hides whether a change fixed a handful
-or fixed many and broke nearly as many. Only the disagreements carry
-information, and an exact sign test over them assumes nothing.
-
-It also refuses to lie to you in the other direction:
+It also tells you when you don't have enough data to know:
 
 ```
   held-out   5 fixed / 0 broken   sign test p=0.0625
-  UNDERPOWERED -- every disagreement favours the winner (5-0), but 5 of them
-                  cannot reach p<0.05: the floor for 5 pairs is 0.0625. Your
-                  held-out split is too small to settle this. Add examples;
-                  about 1 more disagreement would decide it
+  UNDERPOWERED -- 5 disagreements can never reach p<0.05, no matter how
+                  one-sided. Your held-out split is too small. Add examples.
 ```
 
-Five one-sided disagreements out of five, and it *still* cannot be
-significant — because an exact sign test over `d` pairs cannot go below
-`2^(1-d)`. "Not significant" there is a fact about the size of your split
-wearing the costume of a fact about your change. Most tools would just print
-"no improvement."
+Most tools print "no improvement" there. That's wrong — it's not that the
+change failed, it's that you can't tell yet.
 
 ---
-## The optimiser that cannot lie to you
 
-Once you have the checker, the obvious next thing is a tuning loop that runs
-it on itself. That ships too.
-
-`overtuned.optimize()` hill-climbs over a **typed decision schema** — the
-instruction text, the per-option descriptions, what goes into the state, the
-thresholds — and reports the floor and the held-out confirmation as part of
-its output, not as an afterthought.
+## Also: a tuning loop that runs this on itself
 
 ```bash
+pip install "overtuned[local]"
 overtuned mydata.jsonl --kind choice --metric exact
 ```
 
-No API key. The search runs against a small local model by default, so it
-costs nothing and you can run it twice.
+Optimizes a typed decision schema — instruction text, option descriptions,
+which fields go into the state, thresholds — and prints the floor and the
+held-out test as part of its output.
 
-### What it searches, and why each one is in there
+Runs on a small local model by default. No API key, no cost.
 
-| dimension | why |
-| :--- | :--- |
-| instruction text | the wording that tells the model what the decision is |
-| per-option criteria | options compete; this text is what separates them |
-| option descriptions from labelled examples | needs no LLM — two real examples usually beat any hand-written gloss |
-| **state fields** | "this field is irrelevant to the decision" is an empirical claim, and a confident one. Withholding a field should be measured, not assumed |
-| thresholds | the cheapest edit and often the largest. A scorer that puts 0.15 on everything it likes is differently calibrated, not broken — and a pipeline shipping `0.5` is shipping a guess |
-
-### Two worked examples, both on public data, both offline
+**Two examples, public data, offline:**
 
 ```bash
-python3 examples/banking77_intent.py    # support-ticket routing, one `choice`
-python3 examples/rag_relevance.py       # keep-or-drop retrieved passages, `noul` each
+python3 examples/banking77_intent.py    # ticket routing
+python3 examples/rag_relevance.py       # keep-or-drop retrieved passages
 ```
 
-**Ticket routing** starts from the schema everyone writes first — each intent
-described by its own label name — on a deliberately *confusable* cluster of
-intents, because that is where schema design earns its keep:
+Ticket routing, real output:
 
 ```
-  baseline (train)          0.438
   winner   (train)          0.521   apparent gain +0.083
-  selection floor (null)    +0.141   <- 25-candidate search, on pure noise
-  winner, EB-shrunk         0.453
+  selection floor (null)    +0.141   <- the gain is BELOW the floor
 
-  baseline (held-out)       0.333
   winner   (held-out)       0.542   real gain +0.208
-  held-out paired           13 fixed / 3 broken   sign test p=0.0213
+  held-out paired           13 fixed / 3 broken   p=0.0213
 
   verdict: CREDIBLE
 ```
 
-Read the first block and the second block against each other. **The apparent
-gain of +0.083 is below the floor of +0.141** — on the split it searched, this
-run proved nothing. The evidence is entirely in the held-out block. A tool
-that printed only the first block would have reported a win.
+The training number proved nothing. The held-out number is the whole case.
+A tool that printed only the first block would have called this a win.
 
-**RAG relevance** makes the threshold point concrete. The starting schema is
-the one pipelines ship — one yes/no per passage at `0.5` — and it scores
-**F1 = 0.000**, because the scorer puts 0.10–0.19 on everything it likes and
-nothing clears the bar. Nothing is wrong with the model. The bar is a guess.
+RAG relevance starts at **F1 = 0.000** — because the default `0.5` threshold
+everyone ships is above every score the model produces. Search finds 0.286.
 
-```
-  baseline (held-out)       0.000
-  winner   (held-out)       0.286   real gain +0.286
-  held-out paired           7 fixed / 0 broken   sign test p=0.0156
+---
 
-  verdict: CREDIBLE
-```
+## API
 
-### Backends
+```python
+from overtuned import check, confirm, selection_floor, eb_shrink
 
-Anything that turns state plus typed questions into probabilities.
-
-- **`LocalBackend`** (default) — reads option logits from any causal LM in one
-  prefill. Offline, free, no account. This is what the search runs on.
-- **`JevBackend`** — a hosted System One model, for a final validation pass.
-- **Bring your own** — implement `decide(state, questions) -> answers`.
-
-## Install
-
-```bash
-pip install overtuned                 # check() and confirm(), zero dependencies
-pip install "overtuned[local]"        # + the local backend and the optimiser
+check(scores, n_examples, baseline=None)   # -> .apparent_gain .floor .shrunk .beats_floor
+confirm(baseline_hits, new_hits)           # -> .wins .losses .p_value .confirmed .underpowered
+selection_floor(k, n, p)                   # points a k-candidate search gets free
+eb_shrink(scores, n)                       # de-biased best
 ```
 
-`check()` and `confirm()` have **no dependencies at all** — they are arithmetic
-on numbers you already have.
+## Notes
 
-## Reproducibility
+The statistics are old — winner's curse, selective inference, expected
+best-of-k. What's here is one line to get the number for your own run.
 
-Every run is seeded end to end, including the text rewriters: the same
-`--seed` gives the same schema and the same numbers. This is not a nicety. A
-tool whose business is telling you how much of a gain is real cannot hand you
-a different answer each time you ask — an early version reached for the global
-`random` inside a rewriter and drifted by several points between identical
-runs.
-
-```bash
-python3 -m pytest tests/ -q      # every test is an attack on a claim above
-```
-
-## What this is not
-
-- **Not a model.** It does not train, distil, or serve anything.
-- **Not a replacement for a held-out set.** The floor tells you when a search
-  proved nothing; only held-out data tells you when it proved something.
-- **Not new statistics.** Dodge et al. (2019), *Show Your Work*, argued for
-  reporting expected best-found performance as a function of search budget.
-  The winner's-curse and selective-inference literatures supply the
-  correction. Evolutionary computation has been re-evaluating noisy archive
-  elites for decades. What is new here is none of the maths — it is that you
-  can get the number for your own tuning run in one line.
-
-MIT licensed.
+MIT. Tests: `pytest tests/ -q`
