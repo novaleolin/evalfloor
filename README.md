@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="evalfloor" width="270">
+<img src="docs/logo.png" alt="Eval Floor" width="270">
 
-# evalfloor: is your LLM eval improvement real?
+# Eval Floor: is your LLM eval improvement real?
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -15,14 +15,14 @@
 
 ---
 
-## What is evalfloor?
+## What is Eval Floor?
 
 Tune a prompt, a threshold, a retrieval config or an agent scaffold against an
 eval set; try k variants; keep the best. **The score goes up even when none of
 the variants is better than the others**, because the maximum of k noisy
 measurements is biased upward, and the bias grows with k.
 
-evalfloor computes that bias — the *floor* your search clears for free — so you
+Eval Floor computes that bias — the *floor* your search clears for free — so you
 can tell an improvement from a lucky sample. One line, zero dependencies, on
 numbers your tuning loop already produced.
 

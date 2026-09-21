@@ -1,4 +1,4 @@
-"""evalfloor -- your eval score went up; did anything actually get better?
+"""Eval Floor -- your eval score went up; did anything actually get better?
 
     check(scores, n_examples)          did the search prove anything?
     confirm(baseline_hits, new_hits)   does the winner survive held-out data?

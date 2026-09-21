@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="evalfloor" width="270">
+<img src="docs/logo.png" alt="Eval Floor" width="270">
 
-# evalfloor：你的 LLM 评测提升是真的吗？
+# Eval Floor：你的 LLM 评测提升是真的吗？
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -15,13 +15,13 @@
 
 ---
 
-## evalfloor 是什么
+## Eval Floor 是什么
 
 对着评测集调 prompt、调阈值、调检索配置、调 agent 脚手架——试 k 个变体，留最好的那个。
 **哪怕这些变体之间没有任何真实差异，分数也会涨**，因为对 k 个带噪测量取最大值本身就有偏，
 而且偏差随 k 增长。
 
-evalfloor 把这个偏差算出来——也就是你的搜索**白拿的那条地板线**——
+Eval Floor 把这个偏差算出来——也就是你的搜索**白拿的那条地板线**——
 让你能把"真的提升"和"运气好的那次采样"分开。
 一行代码，零依赖，只用你的调参循环已经产出的数字。
 
