@@ -1,4 +1,4 @@
-"""overtuned -- your eval score went up; did anything actually get better?
+"""fluke -- your eval score went up; did anything actually get better?
 
     check(scores, n_examples)          did the search prove anything?
     confirm(baseline_hits, new_hits)   does the winner survive held-out data?
@@ -16,7 +16,7 @@ __all__ = ["check", "confirm", "Check", "Confirm", "selection_floor",
 
 
 def __getattr__(name):  # noqa: D401
-    """Expose the optimiser lazily, so `import overtuned` stays dependency-free.
+    """Expose the optimiser lazily, so `import fluke` stays dependency-free.
 
     check() and confirm() are the reason most people arrive, and requiring
     torch to compute a binomial expectation would be absurd. The optimiser

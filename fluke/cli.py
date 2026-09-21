@@ -46,7 +46,7 @@ def build_schema(task, kind: str) -> Schema:
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="overtuned")
+    ap = argparse.ArgumentParser(prog="fluke")
     ap.add_argument("data", help="JSONL with a state object and a labels list")
     ap.add_argument("--kind", choices=["choice", "noul"], default="choice")
     ap.add_argument("--metric", choices=sorted(METRICS), default="exact")

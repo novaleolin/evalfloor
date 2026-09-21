@@ -21,11 +21,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from overtuned.backends import LocalBackend
-from overtuned.optimize import optimize
-from overtuned.schema import (Schema, mutate_criteria_from_examples,
+from fluke.backends import LocalBackend
+from fluke.optimize import optimize
+from fluke.schema import (Schema, mutate_criteria_from_examples,
                            mutate_instructions, mutate_threshold)
-from overtuned.task import Example, Task, exact
+from fluke.task import Example, Task, exact
 
 #: A confusable cluster, not a random sample. Routing is easy when intents
 #: are far apart; the schema is what earns its keep when they are close, and

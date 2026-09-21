@@ -1,12 +1,27 @@
-# overtuned
+<div align="center">
 
-**Check if your eval improvement is real.**
+# fluke
 
-You tried 30 prompts and kept the best one. Score went 0.62 → 0.69.
+**Was your eval improvement real, or a fluke?**
+
+[![PyPI](https://img.shields.io/pypi/v/fluke)](https://pypi.org/project/fluke/)
+[![Python](https://img.shields.io/pypi/pyversions/fluke)](https://pypi.org/project/fluke/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
+
+*Free Lift Under K Evaluations* — the points a search scores on noise alone.
+
+[English](README.md) · [简体中文](README.zh-CN.md)
+
+</div>
+
+---
+
+You tried 30 prompts and kept the best one. The score went 0.62 → 0.69.
 
 ```python
-import overtuned
-overtuned.check(scores=my_30_scores, n_examples=200)
+import fluke
+print(fluke.check(scores=my_30_scores, n_examples=200))
 ```
 
 ```
@@ -19,25 +34,33 @@ overtuned.check(scores=my_30_scores, n_examples=200)
 ```
 
 All 6.5 points were luck. In that run every one of the 30 prompts was
-**exactly as good as the others** — the spread was sampling noise, and the
-search found the luckiest sample.
+**identical by construction** — the spread was sampling noise, and the search
+found the luckiest sample.
+
+## Install
 
 ```bash
-pip install overtuned
+pip install fluke
 ```
 
 Zero dependencies. Works on numbers you already have.
 
----
+## Quickstart
+
+```bash
+python3 examples/quickstart.py     # 30 seconds, no downloads, no API key
+```
+
+Two tuning sessions that look the same from outside. In one, every variant is
+identical and the gain is pure luck. In the other, one variant is genuinely
+better. **From the final score alone you cannot tell them apart.**
 
 ## Why this happens
 
-Pick the max of 30 noisy scores and you get a high number even when all 30
+Take the max of 30 noisy scores and you get a high number even when all 30
 options are identical. The more you try, the higher it goes.
 
 ![points a search gains when no variant is actually better](docs/floor.png)
-
-**The same thing as a table** (baseline 0.60, no real difference between candidates):
 
 | eval set | 5 tries | 10 tries | 30 tries | 100 tries |
 | ---: | ---: | ---: | ---: | ---: |
@@ -47,25 +70,30 @@ options are identical. The more you try, the higher it goes.
 | 500 | +2.6 | +3.4 | +4.5 | +5.5 |
 | 2000 | +1.3 | +1.7 | +2.2 | +2.7 |
 
-200 eval examples and 30 variants is a normal Tuesday. That row is +7.0.
+200 eval examples and 30 variants is a normal Tuesday. That row is **+7.0**.
 
----
+## Usage
 
-## Two functions
-
-**`check(scores, n_examples)`** — how much of your best score is luck.
-
-**`confirm(baseline_hits, new_hits)`** — does the winner hold up on held-out data?
+### `check` — how much of your best score is luck
 
 ```python
-overtuned.confirm(baseline_correct, winner_correct)   # per-example, True/False
+fluke.check(scores, n_examples)          # scores = every variant you tried
+```
+
+Pass **every** variant, not just the winner. The number of variants is half
+of what sets the floor.
+
+### `confirm` — does the winner hold up on data it wasn't chosen on
+
+```python
+fluke.confirm(baseline_correct, winner_correct)   # per-example, True/False
 ```
 ```
   held-out   13 fixed / 3 broken   sign test p=0.0213
   CONFIRMED -- the winner is better on data it was not selected on
 ```
 
-It also tells you when you don't have enough data to know:
+It also tells you when you simply don't have enough data:
 
 ```
   held-out   5 fixed / 0 broken   sign test p=0.0625
@@ -73,25 +101,56 @@ It also tells you when you don't have enough data to know:
                   one-sided. Your held-out split is too small. Add examples.
 ```
 
-Most tools print "no improvement" there. That's wrong — it's not that the
+Most tools print "no improvement" there. That's wrong — it isn't that the
 change failed, it's that you can't tell yet.
 
----
+### `staged_floor` — for cheap-then-dear loops
 
-## Also: a tuning loop that runs this on itself
+Score everything on something cheap, promote survivors to something dearer,
+report the best:
+
+```python
+fluke.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
+                   k=30, p=0.20, nested=True)
+```
+```
+  selection floor       +0.110
+
+  the reported best came from:
+    stage 2:   60 examples, promote above 40%      100%
+    stage 3:  200 examples                           0%
+
+  Your headline number is coming from the 60-example stage 100% of the time.
+  That is not the 200-example stage you pay for.
+```
+
+The gate is 40% and the candidates are worth 20%, so **almost nothing is ever
+promoted**. The floor is the cheap stage's **+0.110**, not the 200-example
+stage's +0.059. The stricter your gate, the more this bites.
+
+### API
+
+```python
+from fluke import check, confirm, selection_floor, staged_floor, eb_shrink
+
+check(scores, n_examples, baseline=None)   # .apparent_gain .floor .shrunk .beats_floor
+confirm(baseline_hits, new_hits)           # .wins .losses .p_value .confirmed .underpowered
+selection_floor(k, n, p)                   # points a k-candidate search gets free
+staged_floor(stages, k, p, nested=False)   # same, for staged loops
+eb_shrink(scores, n)                       # de-biased best
+```
+
+## A tuning loop that runs this on itself
 
 ```bash
-pip install "overtuned[local]"
-overtuned mydata.jsonl --kind choice --metric exact
+pip install "fluke[local]"
+fluke mydata.jsonl --kind choice --metric exact
 ```
 
 Optimizes a typed decision schema — instruction text, option descriptions,
 which fields go into the state, thresholds — and prints the floor and the
-held-out test as part of its output.
-
-Runs on a small local model by default. No API key, no cost.
-
-**Two examples, public data, offline:**
+held-out test as part of its output. Runs on a small local model by default:
+no API key, no cost.
 
 ```bash
 python3 examples/banking77_intent.py    # ticket routing
@@ -110,78 +169,27 @@ Ticket routing, real output:
   verdict: CREDIBLE
 ```
 
-The training number proved nothing. The held-out number is the whole case.
-A tool that printed only the first block would have called this a win.
+The training number proved nothing; the held-out number is the whole case. A
+tool printing only the first block would have called this a win.
 
-RAG relevance starts at **F1 = 0.000** — because the default `0.5` threshold
-everyone ships is above every score the model produces. Search finds 0.286.
-
----
-
-## API
-
-```python
-from overtuned import check, confirm, selection_floor, eb_shrink
-
-check(scores, n_examples, baseline=None)   # -> .apparent_gain .floor .shrunk .beats_floor
-confirm(baseline_hits, new_hits)           # -> .wins .losses .p_value .confirmed .underpowered
-selection_floor(k, n, p)                   # points a k-candidate search gets free
-staged_floor(stages, k, p, nested=False)   # same, for cheap-then-dear loops
-eb_shrink(scores, n)                       # de-biased best
-```
-
-## Try it in 30 seconds
-
-```bash
-python3 examples/quickstart.py     # no downloads, no key
-```
-
-Two tuning sessions that look identical from the outside. In one, every
-variant is the same and the gain is pure luck. In the other, one variant is
-genuinely better. Same number of tries, same eval set, both end higher.
-
-## If your loop evaluates in stages
-
-Score everything on something cheap, promote the survivors to something
-dearer, report the best. Common, sensible, and worse than it looks:
-
-```python
-overtuned.staged_floor(
-    stages=[(10, 0.0), (60, 0.40), (200, None)],   # (examples, promote above)
-    k=30, p=0.20, nested=True)                     # 30 candidates, true score 0.20
-```
-```
-  stages                10 -> 60 -> 200 examples
-  reported best         0.310
-  selection floor       +0.110   <- with NO real difference between candidates
-
-  the reported best came from:
-    stage 1:   10 examples, promote above 0%         0%
-    stage 2:   60 examples, promote above 40%      100%
-    stage 3:  200 examples                           0%
-
-  Your headline number is coming from the 60-example stage 100% of the time.
-  That is not the 200-example stage you pay for.
-```
-
-The gate is set at 40% and the candidates are worth 20%, so **almost nothing
-is ever promoted**. The reported maximum is a maximum over 60-example scores.
-Its floor is **+0.110** — the floor of the cheap stage, not the +0.059 of the
-200-example stage the loop is paying for.
-
-The stricter your promotion threshold, the more this bites.
+RAG relevance starts at **F1 = 0.000** — the default `0.5` threshold everyone
+ships sits above every score the model produces. Search finds 0.286.
 
 ## Limits
 
 `selection_floor` assumes independent candidates, one evaluation each, and a
 binomial metric. Correlated variants or a heavy-tailed metric push the real
-floor **higher** than it reports; staged evaluation has its own function
-above. The error is always in the same direction: **a gain that fails this
-test fails it for certain.** A gain that passes still needs `confirm()`.
+floor **higher**; staged loops have their own function above. The error is
+always in the same direction: **a gain that fails this test fails it for
+certain.** A gain that passes still needs `confirm()`.
 
 ## Notes
 
 The statistics are old — winner's curse, selective inference, expected
 best-of-k. What's here is one line to get the number for your own run.
 
-MIT. Tests: `pytest tests/ -q`
+```bash
+pytest tests/ -q     # 23 tests, each an attack on a claim above
+```
+
+MIT.
