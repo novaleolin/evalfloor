@@ -152,17 +152,17 @@ staged_floor(stages, k, p, nested=False)   # same, for staged loops
 eb_shrink(scores, n)                       # de-biased best
 ```
 
-## A tuning loop that runs this on itself
+## Schema optimizer (optional)
 
 ```bash
 pip install "evalfloor[local] @ git+https://github.com/novaleolin/evalfloor.git"
 evalfloor mydata.jsonl --kind choice --metric exact
 ```
 
-Optimizes a typed decision schema: instruction text, option descriptions,
-which fields go into the state, and thresholds. The floor and the held-out
-test are part of the output. Uses a local model by default, so no API key is
-required.
+Searches over a typed decision schema: instruction text, option
+descriptions, which fields go into the state, and thresholds. Every run
+prints its own floor and held-out test. The default backend is a local
+model, so no API key is needed.
 
 ```bash
 python3 examples/banking77_intent.py    # ticket routing
@@ -181,56 +181,62 @@ Ticket routing, real output:
   verdict: CREDIBLE
 ```
 
-The train gain of +0.083 is below the floor of +0.141, so the train split
-supports nothing. The verdict comes from the held-out split.
+Here the train gain of +0.083 is under the floor of +0.141, so the verdict
+rests on the held-out split alone.
 
-The RAG example starts at F1 = 0.000: the scorer assigns 0.10 to 0.19 to
-every passage, so a `0.5` threshold returns an empty set. The search reaches
-0.286.
+The RAG example starts at F1 = 0.000. The scorer gives every passage 0.10 to
+0.19, so the default `0.5` threshold returns an empty set. The search reaches
+0.286 by lowering it.
 
 ## Limits
 
-`selection_floor` assumes independent candidates, one evaluation per
-candidate, and a binomial metric. Correlated variants and heavy-tailed metrics
-both raise the true floor above what it returns; staged loops use
-`staged_floor` instead. All three violations push in the same direction, so a
-gain below the reported floor is below the true floor as well. A gain above it
-still requires `confirm()`.
+`selection_floor` assumes candidates are independent, each evaluated once,
+on a 0/1 metric. Correlated candidates and heavy-tailed metrics both make the
+true floor higher than it reports. Staged loops use `staged_floor` instead.
+
+Every one of these errs the same way, so the reported floor is a lower bound.
+A gain under it is under the true floor too. A gain over it still needs
+`confirm()`.
 
 ## FAQ
 
-**"I tuned my prompt 30 times and accuracy went up 5 points. Is that real?"**
-Run `check()` on all 30 scores. At 200 examples the floor is +7.0, so a
-5-point gain is within it.
+**I tuned my prompt 30 times and accuracy went up 5 points. Is that real?**
+Probably not. At 200 eval examples the floor for 30 variants is +7.0. Run
+`check()` on all 30 scores to get the floor for your own numbers.
 
-**"How is this different from a held-out set?"**
-They answer different questions. The floor is computed from the scores you
-already have and identifies searches that support nothing. A held-out set is
-needed to establish that a variant is better, which is what `confirm()`
-tests.
+**How is this different from a held-out set?**
+A held-out set shows a variant is better. The floor shows when your numbers
+cannot show anything, before you spend held-out data finding out. Use
+`check()` first and `confirm()` on whatever survives.
 
-**"Is this just overfitting to the eval set?"**
-Related but distinct. Overfitting refers to a model fitting noise in its
-training data. This is selection bias in the reporting step: no parameters are
-fitted, the maximum of several noisy measurements is simply biased upward.
+**Is this just overfitting to the eval set?**
+Nothing is fitted here. The bias comes from picking the largest of several
+noisy scores, which runs high whether or not a model was trained.
 
-**"My metric isn't accuracy."**
-`selection_floor` assumes a binomial metric. Unbounded and heavy-tailed
-metrics have a higher true floor than it reports, so a gain below the reported
-floor is still below the true one.
+**My metric isn't accuracy.**
+`selection_floor` assumes a 0/1 metric. On other metrics it under-reports, so
+a gain under the reported floor is under the true one as well.
 
-**"My loop promotes candidates between cheap and expensive stages."**
-Use `staged_floor()`. When the promotion gate is strict, the reported
-maximum usually comes from an early stage, and the floor follows that stage
-rather than the final one.
+**My loop promotes candidates between cheap and expensive stages.**
+Use `staged_floor()`. It also reports which stage the maximum came from,
+which is usually not the expensive one.
 
-## Notes
+**Can I use it on hyperparameter sweeps, A/B tests, model selection?**
+Yes. Anything that evaluates k options and keeps the best has this bias.
 
-The underlying results are standard: winner's curse, selective inference,
-and the expected maximum of k order statistics.
+## References
+
+None of the statistics here are new. The closest prior work:
+
+- Dodge et al., [Show Your Work](https://arxiv.org/abs/1909.03004) (2019):
+  report expected best-found performance as a function of search budget.
+- The winner's curse and selective inference literature, for the correction.
+
+## Development
 
 ```bash
-pytest tests/ -q     # 23 tests, each an attack on a claim above
+pytest tests/ -q          # 23 tests
+python3 tools/make_floor_chart.py   # regenerate docs/floor.png
 ```
 
 MIT.
