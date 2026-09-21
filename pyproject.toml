@@ -1,6 +1,6 @@
 [project]
 name = "evalfloor"
-version = "0.2.0"
+version = "0.2.1"
 description = "EvalFloor: is your LLM eval improvement real? Trying k prompt variants and keeping the best scores points on noise alone -- this computes how many, so you can tell a real gain from a lucky sample."
 readme = "README.md"
 license = "MIT"

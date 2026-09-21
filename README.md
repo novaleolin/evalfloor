@@ -7,6 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/evalfloor?logo=pypi&logoColor=white)](https://pypi.org/project/evalfloor/)
 [![Python](https://img.shields.io/pypi/pyversions/evalfloor?logo=python&logoColor=white)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Tests](https://img.shields.io/github/actions/workflow/status/novaleolin/evalfloor/tests.yml?branch=main&label=tests&logo=github)](https://github.com/novaleolin/evalfloor/actions)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
 **[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [CI gate](#use-it-as-a-ci-gate) · [FAQ](#faq) · [简体中文](README.zh-CN.md)**
@@ -50,7 +51,8 @@ print(evalfloor.check(scores=my_30_scores, n_examples=200))
   selection floor       +0.069   <- a 30-candidate search scores this much on pure noise
   best, de-biased       0.616
 
-  BELOW THE FLOOR -- this search has not shown anything
+  BELOW THE FLOOR: a search this size reports at least this much on data
+                   with no real differences at all
 ```
 
 All 30 prompts in this example have the same true accuracy. The 6.5 point
@@ -121,15 +123,16 @@ evalfloor.confirm(baseline_correct, winner_correct)   # per-example, True/False
 ```
 ```
   held-out   13 fixed / 3 broken   sign test p=0.0213
-  CONFIRMED -- the winner is better on data it was not selected on
+  CONFIRMED: the winner is better on data it was not selected on
 ```
 
 It also tells you when you simply don't have enough data:
 
 ```
   held-out   5 fixed / 0 broken   sign test p=0.0625
-  UNDERPOWERED -- 5 disagreements can never reach p<0.05, no matter how
-                  one-sided. Your held-out split is too small. Add examples.
+  UNDERPOWERED: every disagreement favours the winner (5-0), but 5 of them
+                cannot reach p<0.05: the floor for 5 pairs is 0.0625. Your
+                held-out split is too small to settle this.
 ```
 
 An exact sign test over `d` disagreements cannot return a p-value below

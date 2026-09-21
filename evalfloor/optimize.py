@@ -121,7 +121,7 @@ class Result:
             f"  held-out paired           {self.wins} fixed / {self.losses} broken"
             f"   sign test p={self.p_value:.4f}",
             "",
-            f"  verdict: {verdict} -- {why}",
+            f"  verdict: {verdict}: {why}",
         ]
         return "\n".join(L)
 

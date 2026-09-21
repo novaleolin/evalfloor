@@ -7,6 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/evalfloor?logo=pypi&logoColor=white)](https://pypi.org/project/evalfloor/)
 [![Python](https://img.shields.io/pypi/pyversions/evalfloor?logo=python&logoColor=white)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Tests](https://img.shields.io/github/actions/workflow/status/novaleolin/evalfloor/tests.yml?branch=main&label=tests&logo=github)](https://github.com/novaleolin/evalfloor/actions)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
 **[五秒上手](#五秒上手) · [为什么会这样](#为什么会这样) · [API](#api) · [CI 门禁](#当-ci-门禁用) · [常见问题](#常见问题) · [English](README.md)**
@@ -49,7 +50,8 @@ print(evalfloor.check(scores=my_30_scores, n_examples=200))
   selection floor       +0.069   <- 30 个候选的搜索，在纯噪声上就能拿到这么多
   best, de-biased       0.616
 
-  BELOW THE FLOOR -- this search has not shown anything
+  BELOW THE FLOOR: a search this size reports at least this much on data
+                   with no real differences at all
 ```
 
 这个例子里 30 个 prompt 的真实准确率相同。6.5 个点的涨幅是抽样误差，落在地板之下。
@@ -116,15 +118,16 @@ evalfloor.confirm(baseline_correct, winner_correct)   # 逐样本，True/False
 ```
 ```
   held-out   13 fixed / 3 broken   sign test p=0.0213
-  CONFIRMED -- the winner is better on data it was not selected on
+  CONFIRMED: the winner is better on data it was not selected on
 ```
 
 它也会告诉你"数据还不够、判不了"：
 
 ```
   held-out   5 fixed / 0 broken   sign test p=0.0625
-  UNDERPOWERED -- 5 disagreements can never reach p<0.05, no matter how
-                  one-sided. Your held-out split is too small. Add examples.
+  UNDERPOWERED: every disagreement favours the winner (5-0), but 5 of them
+                cannot reach p<0.05: the floor for 5 pairs is 0.0625. Your
+                held-out split is too small to settle this.
 ```
 
 大多数工具在这里会打印"没有提升"。`d` 个不一致对的精确符号检验，p 值下限是 `2^(1-d)`，所以 5 个及以下永远到不了 0.05。

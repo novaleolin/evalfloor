@@ -59,10 +59,10 @@ def main():
     print(check(b, N_EVAL))
 
     banner("The part that settles it: data the search never saw")
-    print("""  check() tells you when a search proved nothing. It cannot tell you
-  that a search proved something -- the scores it reads were all measured
-  on the data you searched over. For that you need held-out examples and
-  a per-example comparison.""")
+    print("""  check() tells you when a search proved nothing. It cannot tell you that
+  a search proved something. The scores it reads were all measured on the
+  data you searched over, so establishing a real gain needs held-out
+  examples and a per-example comparison.""")
     held = random.Random(11)
     base_hits = [held.random() < TRUE_BASE for _ in range(N_EVAL)]
     # the genuinely better variant, re-measured on examples it never saw

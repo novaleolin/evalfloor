@@ -41,12 +41,11 @@ class Check:
         return self.apparent_gain > self.floor
 
     def __str__(self) -> str:
-        v = ("the gain is larger than selection alone produces, but it was "
-             "still measured on the data you searched over -- confirm it on "
-             "held-out data with confirm()"
+        v = ("larger than selection alone produces. It was still measured on "
+             "the data you searched over, so confirm it with confirm()"
              if self.beats_floor else
-             "this search has not shown anything: a search this size reports "
-             "at least this much on data with no real differences at all")
+             "a search this size reports at least this much on data with no "
+             "real differences at all")
         return "\n".join([
             f"  candidates tried      {self.n_candidates}",
             f"  examples each         {self.n_examples}",
@@ -58,8 +57,7 @@ class Check:
             f"{self.n_candidates}-candidate search reports on pure noise",
             f"  best, de-biased       {self.shrunk:.3f}",
             "",
-            f"  {'ABOVE THE FLOOR' if self.beats_floor else 'BELOW THE FLOOR'}"
-            f" -- {v}",
+            f"  {'ABOVE THE FLOOR' if self.beats_floor else 'BELOW THE FLOOR'}: {v}",
         ])
 
 
@@ -160,15 +158,16 @@ class Confirm:
     def __str__(self) -> str:
         d = self.wins + self.losses
         if self.confirmed:
-            tail = "CONFIRMED -- the winner is better on data it was not selected on"
+            tail = ("CONFIRMED: the winner is better on data it was not "
+                    "selected on")
         elif self.underpowered:
-            tail = (f"UNDERPOWERED -- every disagreement favours the winner "
+            tail = (f"UNDERPOWERED: every disagreement favours the winner "
                     f"({self.wins}-{self.losses}), but {d} of them cannot reach "
                     f"p<0.05: the floor for {d} pairs is {2.0 ** (1 - d):.4f}. "
                     f"Your held-out split is too small to settle this. Add "
                     f"examples; about {6 - d} more disagreements would decide it")
         else:
-            tail = "NOT CONFIRMED -- not distinguishable from chance"
+            tail = "NOT CONFIRMED: not distinguishable from chance"
         return (f"  held-out   {self.wins} fixed / {self.losses} broken"
                 f"   sign test p={self.p_value:.4f}\n  {tail}")
 
