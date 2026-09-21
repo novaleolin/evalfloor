@@ -2,6 +2,10 @@
 
     check(scores, n_examples)          did the search prove anything?
     confirm(baseline_hits, new_hits)   does the winner survive held-out data?
+    staged_floor(stages, k, p)         the same, for cheap-then-expensive loops
+
+`python -m evalfloor.gate` wires the same check into CI, exiting non-zero
+when a gain sits inside the floor.
 
 Both are arithmetic on numbers your existing tuning loop already produced:
 no model, no API key, no dependencies. The schema optimiser in `optimize`
@@ -10,7 +14,7 @@ is the same machinery applied to itself, and needs the extras.
 from .check import (Check, Confirm, StagedFloor, check, confirm, eb_shrink,
                     selection_floor, staged_floor)
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 __all__ = ["check", "confirm", "Check", "Confirm", "selection_floor",
            "eb_shrink", "staged_floor", "StagedFloor"]
 

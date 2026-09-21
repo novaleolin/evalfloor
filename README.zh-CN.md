@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
-**[五秒上手](#五秒上手) · [为什么会这样](#为什么会这样) · [API](#api) · [常见问题](#常见问题) · [English](README.md)**
+**[五秒上手](#五秒上手) · [为什么会这样](#为什么会这样) · [API](#api) · [CI 门禁](#当-ci-门禁用) · [常见问题](#常见问题) · [English](README.md)**
 
 </div>
 
@@ -76,6 +76,28 @@ python3 examples/quickstart.py     # 不下载任何东西，不需要 key
 | 2000 | +1.3 | +1.7 | +2.2 | +2.7 |
 
 评测集 200 条、试 30 个变体时，地板是 +7.0 个点。
+
+### 常见基准的地板
+
+一次搜索在没有任何真实提升时白拿的准确率点数
+（`python3 tools/benchmark_floors.py`）：
+
+| 基准 | 题量 | 试 10 个 | 试 30 个 | 试 100 个 |
+| :--- | ---: | ---: | ---: | ---: |
+| **AIME 2025** | **30** | **+13.1** | **+17.6** | **+21.9** |
+| MT-Bench | 80 | +7.7 | +10.1 | +12.2 |
+| HumanEval | 164 | +5.1 | +6.7 | +8.1 |
+| GPQA Diamond | 198 | +5.4 | +7.2 | +8.9 |
+| MBPP | 378 | +3.6 | +4.7 | +5.8 |
+| Arena-Hard | 500 | +3.5 | +4.6 | +5.6 |
+| SWE-bench Verified | 500 | +3.4 | +4.5 | +5.5 |
+| GSM8K | 1319 | +1.5 | +2.0 | +2.4 |
+| MMLU 全量 | 14042 | +0.6 | +0.8 | +1.0 |
+
+AIME 只有 30 道题。在它上面试 30 个 prompt 留下最好的，
+在完全没有真实提升的情况下也能拿到 +17.6 分。
+MMLU 14042 题只有 +0.8，所以同一套调参习惯在那里是安全的，在这里不是。
+
 
 ## 用法
 
@@ -170,6 +192,28 @@ python3 examples/rag_relevance.py       # 检索段落的留/弃判断
 
 RAG 示例从 F1 = 0.000 起步。打分器给每个段落 0.10 到 0.19，默认阈值 `0.5` 会返回空集。
 搜索把阈值降下来之后到 0.286。
+
+## 当 CI 门禁用
+
+把地板打印出来，只帮到看终端的那个人。接进产出这些分数的流水线，
+才能拦住一个靠噪声被提拔的结果。
+
+```bash
+python -m evalfloor.gate --scores 0.62 0.65 0.69 --n 200
+python -m evalfloor.gate results.json --json
+```
+
+涨幅越过地板退出码 0，没越过 1，输入有问题 2。
+加 `--json` 时 stdout 是一个对象，其余输出走 stderr。
+
+```yaml
+- name: 调参结果必须越过选择地板
+  run: python -m evalfloor.gate results.json
+```
+
+`results.json` 需要 `scores` 和 `n_examples`，可选 `baseline_hits` 与 `winner_hits`。
+留出数组存在时以它为准而不是地板：地板管的是搜索所用的那一份数据，
+而留出集从没被用来做选择。
 
 ## 适用边界
 

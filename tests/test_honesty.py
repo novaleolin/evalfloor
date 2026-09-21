@@ -232,3 +232,46 @@ def test_single_stage_staged_floor_agrees_with_the_plain_one():
     a = staged_floor([(200, None)], k=20, p=0.6, reps=1500).floor
     b = selection_floor(20, 200, 0.6, reps=1500)
     assert abs(a - b) < 0.01, (a, b)
+
+
+# --- the CI gate: exit codes are the interface ---
+
+def _gate(argv):
+    from evalfloor.gate import main
+    return main(argv)
+
+
+def test_gate_passes_a_gain_above_the_floor():
+    assert _gate(["--scores", "0.50", "0.52", "0.85", "--n", "2000",
+                  "--json"]) == 0
+
+
+def test_gate_fails_a_gain_inside_the_floor():
+    assert _gate(["--scores", "0.62", "0.63", "0.645", "0.61", "0.655",
+                  "0.60", "0.64", "0.635", "0.62", "0.65",
+                  "--n", "100", "--json"]) == 1
+
+
+def test_gate_prefers_held_out_evidence_over_the_floor():
+    """With paired data the held-out test decides, not the floor.
+
+    Here the apparent gain clears the floor but only four held-out
+    disagreements exist, so the comparison cannot reach significance and the
+    gate refuses. The floor governs the split the search ran on; a held-out
+    result was never selected on, so it is the stronger criterion when
+    present.
+    """
+    import json
+    import tempfile
+    from pathlib import Path
+    d = {"scores": [0.62, 0.65, 0.68, 0.66, 0.70], "n_examples": 200,
+         "baseline_hits": [1, 0, 0, 1, 0, 1, 0, 0, 1, 0],
+         "winner_hits": [1, 1, 1, 1, 0, 1, 0, 1, 1, 1]}
+    with tempfile.TemporaryDirectory() as td:
+        p = Path(td) / "g.json"
+        p.write_text(json.dumps(d))
+        assert _gate([str(p), "--json"]) == 1
+
+
+def test_gate_rejects_incomplete_input():
+    assert _gate(["--scores", "0.5", "0.6", "--json"]) == 2

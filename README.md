@@ -9,7 +9,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
-**[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [FAQ](#faq) · [简体中文](README.zh-CN.md)**
+**[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [CI gate](#use-it-as-a-ci-gate) · [FAQ](#faq) · [简体中文](README.zh-CN.md)**
 
 </div>
 
@@ -80,6 +80,28 @@ variants raises the expected maximum.
 | 2000 | +1.3 | +1.7 | +2.2 | +2.7 |
 
 At 200 examples and 30 variants the floor is +7.0 points.
+
+### Floors for benchmarks you already use
+
+Accuracy points a search gains when no variant is actually better
+(`python3 tools/benchmark_floors.py`):
+
+| benchmark | items | 10 tries | 30 tries | 100 tries |
+| :--- | ---: | ---: | ---: | ---: |
+| **AIME 2025** | **30** | **+13.1** | **+17.6** | **+21.9** |
+| MT-Bench | 80 | +7.7 | +10.1 | +12.2 |
+| HumanEval | 164 | +5.1 | +6.7 | +8.1 |
+| GPQA Diamond | 198 | +5.4 | +7.2 | +8.9 |
+| MBPP | 378 | +3.6 | +4.7 | +5.8 |
+| Arena-Hard | 500 | +3.5 | +4.6 | +5.6 |
+| SWE-bench Verified | 500 | +3.4 | +4.5 | +5.5 |
+| GSM8K | 1319 | +1.5 | +2.0 | +2.4 |
+| MMLU (full) | 14042 | +0.6 | +0.8 | +1.0 |
+
+AIME has 30 problems. Trying 30 prompts against it and keeping the best
+scores +17.6 points with no real improvement at all. MMLU at 14042 items
+gives +0.8, which is why the same tuning habit is safe there and not here.
+
 
 ## Usage
 
@@ -185,6 +207,30 @@ rests on the held-out split alone.
 The RAG example starts at F1 = 0.000. The scorer gives every passage 0.10 to
 0.19, so the default `0.5` threshold returns an empty set. The search reaches
 0.286 by lowering it.
+
+## Use it as a CI gate
+
+Printing a floor helps whoever reads the terminal. Wiring it into the
+pipeline that produced the scores stops a result from being promoted on
+noise.
+
+```bash
+python -m evalfloor.gate --scores 0.62 0.65 0.69 --n 200
+python -m evalfloor.gate results.json --json
+```
+
+Exit code 0 when the gain clears the floor, 1 when it does not, 2 on bad
+input. With `--json`, stdout is one object; everything else goes to stderr.
+
+```yaml
+- name: tuning result must clear the selection floor
+  run: python -m evalfloor.gate results.json
+```
+
+`results.json` takes `scores` and `n_examples`, and optionally
+`baseline_hits` and `winner_hits`. When the held-out arrays are present they
+decide, not the floor: the floor governs the split the search ran on, and a
+held-out result was never selected on.
 
 ## Limits
 
