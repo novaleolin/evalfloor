@@ -275,3 +275,70 @@ def test_gate_prefers_held_out_evidence_over_the_floor():
 
 def test_gate_rejects_incomplete_input():
     assert _gate(["--scores", "0.5", "0.6", "--json"]) == 2
+
+
+# --- loaders: the step where people give up is collecting the scores ---
+
+def _tmpfile(name, text):
+    import tempfile
+    from pathlib import Path
+    d = tempfile.mkdtemp()
+    p = Path(d) / name
+    p.write_text(text, encoding="utf-8")
+    return str(p)
+
+
+def test_load_reads_a_sweep_csv():
+    from evalfloor import load
+    p = _tmpfile("s.csv", "variant,accuracy\na,0.61\nb,0.64\nc,0.70\n")
+    assert load(p, "accuracy") == [0.61, 0.64, 0.70]
+
+
+def test_load_reads_jsonl_and_json():
+    from evalfloor import load
+    a = _tmpfile("s.jsonl", '{"score": 0.5}\n{"score": 0.6}\n')
+    b = _tmpfile("s.json", '{"trials": [{"score": 0.5}, {"score": 0.6}]}')
+    c = _tmpfile("bare.json", "[0.5, 0.6]")
+    assert load(a, "score") == load(b, "score") == load(c, "score") == [0.5, 0.6]
+
+
+def test_load_skips_failed_rows_rather_than_crashing():
+    """A sweep with two failed trials should still be checkable."""
+    from evalfloor import load
+    p = _tmpfile("s.csv", "v,acc\na,0.61\nb,\nc,nan_but_text\nd,0.70\n")
+    assert load(p, "acc") == [0.61, 0.70]
+
+
+def test_load_names_the_columns_it_found():
+    from evalfloor import load
+    p = _tmpfile("s.csv", "variant,accuracy\na,0.61\n")
+    try:
+        load(p, "score")
+    except KeyError as e:
+        assert "accuracy" in str(e)
+    else:
+        raise AssertionError("a wrong column name must say what is there")
+
+
+def test_from_optuna_drops_incomplete_trials():
+    """Pruned trials were never candidates for the maximum, so counting them
+    would inflate k and with it the floor."""
+    from evalfloor import from_optuna
+
+    class S:
+        def __init__(self, name):
+            self.name = name
+
+    class T:
+        def __init__(self, value, state):
+            self.value, self.state = value, S(state)
+
+    trials = [T(0.5, "COMPLETE"), T(0.9, "PRUNED"), T(0.7, "COMPLETE"),
+              T(None, "FAIL")]
+    assert from_optuna(trials) == [0.5, 0.7]
+
+
+def test_gate_reads_a_csv_end_to_end():
+    p = _tmpfile("s.csv",
+                 "v,acc\n" + "".join(f"x{i},{0.62 + 0.004 * i}\n" for i in range(10)))
+    assert _gate([p, "--score-col", "acc", "--n", "100", "--json"]) == 1

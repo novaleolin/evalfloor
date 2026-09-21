@@ -13,10 +13,14 @@ is the same machinery applied to itself, and needs the extras.
 """
 from .check import (Check, Confirm, StagedFloor, check, confirm, eb_shrink,
                     selection_floor, staged_floor)
+from .load import (from_csv, from_json, from_jsonl, from_optuna, from_records,
+                   load)
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __all__ = ["check", "confirm", "Check", "Confirm", "selection_floor",
-           "eb_shrink", "staged_floor", "StagedFloor"]
+           "eb_shrink", "staged_floor", "StagedFloor",
+           "load", "from_records", "from_optuna", "from_csv", "from_jsonl",
+           "from_json"]
 
 
 def __getattr__(name):  # noqa: D401

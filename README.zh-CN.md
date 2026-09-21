@@ -111,6 +111,30 @@ evalfloor.check(scores, n_examples)          # scores = 你试过的每一个变
 
 `scores` 要包含你评测过的每一个变体，不只是赢的那个。地板取决于试了多少个。
 
+### 从你已有的运行结果里读分数
+
+把每个变体的分数手工收集成一个 list，是大多数人放弃的那一步，
+所以 `check()` 不要求你这么做。
+
+```bash
+evalfloor-gate sweep.csv --score-col accuracy --n 200
+```
+
+```python
+from evalfloor import check, load, from_optuna
+
+check(load("sweep.csv", "accuracy"), n_examples=200)       # .csv .tsv .jsonl .json
+check(from_optuna(study), n_examples=200)                  # Optuna study
+check(from_records(my_runs, "eval/accuracy"), n_examples=200)
+```
+
+`from_records` 接受字典、dataclass 或行，按字段名取值，
+所以一批 W&B run 或 DSPy 候选不需要专门的适配器。
+分数缺失或解析不了的行会被跳过：有两个 trial 失败的 sweep 仍然能检查。
+`from_optuna` 会丢掉 pruned 和 failed 的 trial，它们从来不是最大值的候选，
+算进去只会抬高地板。
+
+
 ### `confirm`：赢家在没被用来挑选的数据上还站得住吗
 
 ```python

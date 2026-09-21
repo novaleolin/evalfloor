@@ -1,6 +1,6 @@
 [project]
 name = "evalfloor"
-version = "0.2.1"
+version = "0.3.0"
 description = "EvalFloor: is your LLM eval improvement real? Trying k prompt variants and keeping the best scores points on noise alone -- this computes how many, so you can tell a real gain from a lucky sample."
 readme = "README.md"
 license = "MIT"
@@ -34,6 +34,7 @@ examples = ["torch>=2.0", "transformers>=4.40", "datasets>=2.0"]
 
 [project.scripts]
 evalfloor = "evalfloor.cli:main"
+evalfloor-gate = "evalfloor.gate:main"
 
 [project.urls]
 Source = "https://github.com/novaleolin/evalfloor"

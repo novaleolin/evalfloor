@@ -116,6 +116,31 @@ evalfloor.check(scores, n_examples)          # scores = every variant you tried
 `scores` must contain every variant you evaluated, not just the winner. The
 floor depends on how many were tried.
 
+### Reading scores from your existing run
+
+Collecting every variant's score by hand is the step where people stop
+bothering, so `check()` does not require it.
+
+```bash
+evalfloor-gate sweep.csv --score-col accuracy --n 200
+```
+
+```python
+from evalfloor import check, load, from_optuna
+
+check(load("sweep.csv", "accuracy"), n_examples=200)       # .csv .tsv .jsonl .json
+check(from_optuna(study), n_examples=200)                  # an Optuna study
+check(from_records(my_runs, "eval/accuracy"), n_examples=200)
+```
+
+`from_records` takes dicts, dataclasses or rows and reads the field by name,
+so a list of W&B runs or DSPy candidates works without a per-tool adapter.
+Rows whose score is missing or unparseable are skipped: a sweep with two
+failed trials is still checkable. `from_optuna` drops pruned and failed
+trials, since they were never candidates for the maximum and counting them
+would inflate the floor.
+
+
 ### `confirm`: does the winner hold up on data it wasn't chosen on
 
 ```python
