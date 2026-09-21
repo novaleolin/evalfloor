@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate docs/floor.png -- the figure in the README.
 
-Kept out of the package on purpose: `import fluke` must not pull in a
+Kept out of the package on purpose: `import evalfloor` must not pull in a
 plotting library. Run this only when the numbers change.
 
     pip install matplotlib && python3 tools/make_floor_chart.py
@@ -15,7 +15,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from fluke import selection_floor
+from evalfloor import selection_floor
 
 TRIES = [2, 3, 5, 8, 12, 20, 30, 50, 75, 100]
 EVAL_SIZES = [50, 100, 200, 500, 2000]

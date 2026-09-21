@@ -9,9 +9,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from fluke.optimize import Result, eb_shrink, selection_floor
-from fluke.schema import Schema, mutate_threshold
-from fluke.task import Example, Task, contains, exact, f1, predict
+from evalfloor.optimize import Result, eb_shrink, selection_floor
+from evalfloor.schema import Schema, mutate_threshold
+from evalfloor.task import Example, Task, contains, exact, f1, predict
 
 
 def test_selection_floor_grows_with_candidates():
@@ -135,7 +135,7 @@ def test_enough_one_sided_pairs_does_reach_significance():
 
 def test_check_catches_a_search_that_found_only_noise():
     """30 candidates that are all equally good still produce a 'winner'."""
-    from fluke import check
+    from evalfloor import check
     rng = random.Random(0)
     scores = [0.62] + [0.62 + rng.gauss(0, 0.034) for _ in range(29)]
     c = check(scores, n_examples=200)
@@ -145,7 +145,7 @@ def test_check_catches_a_search_that_found_only_noise():
 
 
 def test_check_lets_a_real_winner_through():
-    from fluke import check
+    from evalfloor import check
     rng = random.Random(1)
     scores = [0.50 + rng.gauss(0, 0.01) for _ in range(20)] + [0.80]
     c = check(scores, n_examples=500)
@@ -153,13 +153,13 @@ def test_check_lets_a_real_winner_through():
 
 
 def test_floor_falls_when_each_candidate_is_measured_on_more_data():
-    from fluke import selection_floor
+    from evalfloor import selection_floor
     assert (selection_floor(30, 2000, 0.5, reps=800, seed=1)
             < selection_floor(30, 50, 0.5, reps=800, seed=1) / 2)
 
 
 def test_confirm_needs_the_pairs_to_line_up():
-    from fluke import confirm
+    from evalfloor import confirm
     try:
         confirm([1, 0, 1], [1, 0])
     except ValueError as e:
@@ -169,7 +169,7 @@ def test_confirm_needs_the_pairs_to_line_up():
 
 
 def test_confirm_reads_a_clear_win():
-    from fluke import confirm
+    from evalfloor import confirm
     c = confirm([0] * 10 + [1] * 10, [1] * 10 + [1] * 10)
     assert c.confirmed and c.wins == 10 and c.losses == 0
 
@@ -178,7 +178,7 @@ def test_importing_the_package_needs_no_heavy_dependency():
     """check() and confirm() are the front door; they must not drag in torch."""
     import subprocess
     import sys
-    code = ("import sys, fluke; fluke.check([0.5, 0.6], 100); "
+    code = ("import sys, evalfloor; evalfloor.check([0.5, 0.6], 100); "
             "assert 'torch' not in sys.modules and 'transformers' not in sys.modules")
     r = subprocess.run([sys.executable, "-c", code], capture_output=True,
                        cwd=str(Path(__file__).resolve().parents[1]))
@@ -190,7 +190,7 @@ def test_importing_the_package_needs_no_heavy_dependency():
 def test_staged_floor_matches_the_stage_the_max_comes_from():
     """A strict gate makes the headline come from the cheap stage, so the
     floor tracks THAT stage's size, not the expensive one you pay for."""
-    from fluke import selection_floor, staged_floor
+    from evalfloor import selection_floor, staged_floor
     r = staged_floor([(10, 0.0), (60, 0.40), (200, None)], k=30, p=0.20,
                      nested=True, reps=600)
     assert r.headline_stage[0] == 60
@@ -208,7 +208,7 @@ def test_a_passable_gate_moves_the_headline_to_the_dear_stage():
     constant: at p=0.75 the floor for 30 candidates on 200 examples is about
     +0.06 on its own, so a fixed "< 0.05" would fail a correct result.
     """
-    from fluke import selection_floor, staged_floor
+    from evalfloor import selection_floor, staged_floor
     r = staged_floor([(10, 0.0), (60, 0.40), (200, None)], k=30, p=0.75,
                      nested=True, reps=600)
     assert r.headline_stage[0] == 200
@@ -220,7 +220,7 @@ def test_a_passable_gate_moves_the_headline_to_the_dear_stage():
 def test_nesting_the_confirmation_set_costs_something():
     """Re-using the selection examples inside the confirmation set can only
     dilute selection noise, never remove it."""
-    from fluke import staged_floor
+    from evalfloor import staged_floor
     kw = dict(k=30, p=0.50, reps=900)
     nested = staged_floor([(60, 0.45), (200, None)], nested=True, **kw).floor
     fresh = staged_floor([(60, 0.45), (200, None)], nested=False, **kw).floor
@@ -228,7 +228,7 @@ def test_nesting_the_confirmation_set_costs_something():
 
 
 def test_single_stage_staged_floor_agrees_with_the_plain_one():
-    from fluke import selection_floor, staged_floor
+    from evalfloor import selection_floor, staged_floor
     a = staged_floor([(200, None)], k=20, p=0.6, reps=1500).floor
     b = selection_floor(20, 200, 0.6, reps=1500)
     assert abs(a - b) < 0.01, (a, b)

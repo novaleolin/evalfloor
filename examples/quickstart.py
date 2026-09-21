@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from fluke import check, confirm
+from evalfloor import check, confirm
 
 N_EVAL = 200          # how many examples each variant was scored on
 N_TRIES = 30          # how many prompt variants were tried
@@ -74,7 +74,7 @@ def main():
 {'=' * 64}
   Your own run, in two lines:
 
-      from fluke import check, confirm
+      from evalfloor import check, confirm
       print(check(my_scores, n_examples=len(my_eval_set)))
       print(confirm(baseline_correct, winner_correct))
 

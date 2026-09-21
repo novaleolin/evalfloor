@@ -1,15 +1,15 @@
 <div align="center">
 
-# fluke
+# evalfloor
 
-**Was your eval improvement real, or a fluke?**
+**How many points does your eval improvement get for free?**
 
-[![PyPI](https://img.shields.io/pypi/v/fluke)](https://pypi.org/project/fluke/)
-[![Python](https://img.shields.io/pypi/pyversions/fluke)](https://pypi.org/project/fluke/)
+[![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
+[![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 
-*Free Lift Under K Evaluations* — the points a search scores on noise alone.
+Tuning over k variants scores points on noise alone. This tells you how many.
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
@@ -20,8 +20,8 @@
 You tried 30 prompts and kept the best one. The score went 0.62 → 0.69.
 
 ```python
-import fluke
-print(fluke.check(scores=my_30_scores, n_examples=200))
+import evalfloor
+print(evalfloor.check(scores=my_30_scores, n_examples=200))
 ```
 
 ```
@@ -40,7 +40,7 @@ found the luckiest sample.
 ## Install
 
 ```bash
-pip install fluke
+pip install evalfloor
 ```
 
 Zero dependencies. Works on numbers you already have.
@@ -77,7 +77,7 @@ options are identical. The more you try, the higher it goes.
 ### `check` — how much of your best score is luck
 
 ```python
-fluke.check(scores, n_examples)          # scores = every variant you tried
+evalfloor.check(scores, n_examples)          # scores = every variant you tried
 ```
 
 Pass **every** variant, not just the winner. The number of variants is half
@@ -86,7 +86,7 @@ of what sets the floor.
 ### `confirm` — does the winner hold up on data it wasn't chosen on
 
 ```python
-fluke.confirm(baseline_correct, winner_correct)   # per-example, True/False
+evalfloor.confirm(baseline_correct, winner_correct)   # per-example, True/False
 ```
 ```
   held-out   13 fixed / 3 broken   sign test p=0.0213
@@ -110,7 +110,7 @@ Score everything on something cheap, promote survivors to something dearer,
 report the best:
 
 ```python
-fluke.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
+evalfloor.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
                    k=30, p=0.20, nested=True)
 ```
 ```
@@ -131,7 +131,7 @@ stage's +0.059. The stricter your gate, the more this bites.
 ### API
 
 ```python
-from fluke import check, confirm, selection_floor, staged_floor, eb_shrink
+from evalfloor import check, confirm, selection_floor, staged_floor, eb_shrink
 
 check(scores, n_examples, baseline=None)   # .apparent_gain .floor .shrunk .beats_floor
 confirm(baseline_hits, new_hits)           # .wins .losses .p_value .confirmed .underpowered
@@ -143,8 +143,8 @@ eb_shrink(scores, n)                       # de-biased best
 ## A tuning loop that runs this on itself
 
 ```bash
-pip install "fluke[local]"
-fluke mydata.jsonl --kind choice --metric exact
+pip install "evalfloor[local]"
+evalfloor mydata.jsonl --kind choice --metric exact
 ```
 
 Optimizes a typed decision schema — instruction text, option descriptions,

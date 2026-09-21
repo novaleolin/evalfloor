@@ -1,15 +1,15 @@
 <div align="center">
 
-# fluke
+# evalfloor
 
-**你的评测提升是真的，还是碰巧？**
+**你的评测提升里，有多少是白给的？**
 
-[![PyPI](https://img.shields.io/pypi/v/fluke)](https://pypi.org/project/fluke/)
-[![Python](https://img.shields.io/pypi/pyversions/fluke)](https://pypi.org/project/fluke/)
+[![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
+[![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 
-*Free Lift Under K Evaluations* —— 一次搜索光靠噪声就能拿到的分数
+在 k 个变体上调参，光靠噪声就能拿到分数。这个库告诉你能拿到多少。
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
@@ -20,8 +20,8 @@
 你试了 30 个 prompt，留下分数最高的那个。分数从 0.62 涨到 0.69。
 
 ```python
-import fluke
-print(fluke.check(scores=my_30_scores, n_examples=200))
+import evalfloor
+print(evalfloor.check(scores=my_30_scores, n_examples=200))
 ```
 
 ```
@@ -39,7 +39,7 @@ print(fluke.check(scores=my_30_scores, n_examples=200))
 ## 安装
 
 ```bash
-pip install fluke
+pip install evalfloor
 ```
 
 零依赖。只用你手上已经有的数字。
@@ -75,7 +75,7 @@ python3 examples/quickstart.py     # 不下载任何东西，不需要 key
 ### `check` —— 你的最高分里有多少是运气
 
 ```python
-fluke.check(scores, n_examples)          # scores = 你试过的每一个变体
+evalfloor.check(scores, n_examples)          # scores = 你试过的每一个变体
 ```
 
 要传**全部**变体，不是只传赢的那个。候选数量是决定地板高低的一半因素。
@@ -83,7 +83,7 @@ fluke.check(scores, n_examples)          # scores = 你试过的每一个变体
 ### `confirm` —— 赢家在"没被用来挑选"的数据上还站得住吗
 
 ```python
-fluke.confirm(baseline_correct, winner_correct)   # 逐样本，True/False
+evalfloor.confirm(baseline_correct, winner_correct)   # 逐样本，True/False
 ```
 ```
   held-out   13 fixed / 3 broken   sign test p=0.0213
@@ -107,7 +107,7 @@ fluke.confirm(baseline_correct, winner_correct)   # 逐样本，True/False
 先用便宜的评测筛一遍，晋级的再用贵的评，报告最好的那个：
 
 ```python
-fluke.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
+evalfloor.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
                    k=30, p=0.20, nested=True)
 ```
 ```
@@ -125,7 +125,7 @@ fluke.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
 ### API
 
 ```python
-from fluke import check, confirm, selection_floor, staged_floor, eb_shrink
+from evalfloor import check, confirm, selection_floor, staged_floor, eb_shrink
 
 check(scores, n_examples, baseline=None)   # .apparent_gain .floor .shrunk .beats_floor
 confirm(baseline_hits, new_hits)           # .wins .losses .p_value .confirmed .underpowered
@@ -137,8 +137,8 @@ eb_shrink(scores, n)                       # 去偏后的最优值
 ## 附带：一个会对自己做这套检查的调参循环
 
 ```bash
-pip install "fluke[local]"
-fluke mydata.jsonl --kind choice --metric exact
+pip install "evalfloor[local]"
+evalfloor mydata.jsonl --kind choice --metric exact
 ```
 
 优化一个类型化决策 schema —— 指令文本、选项描述、哪些字段进 state、阈值 ——

@@ -21,11 +21,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from fluke.backends import LocalBackend
-from fluke.optimize import optimize
-from fluke.schema import (Schema, mutate_criteria_from_examples,
+from evalfloor.backends import LocalBackend
+from evalfloor.optimize import optimize
+from evalfloor.schema import (Schema, mutate_criteria_from_examples,
                            mutate_instructions, mutate_threshold)
-from fluke.task import Example, Task, exact
+from evalfloor.task import Example, Task, exact
 
 #: A confusable cluster, not a random sample. Routing is easy when intents
 #: are far apart; the schema is what earns its keep when they are close, and

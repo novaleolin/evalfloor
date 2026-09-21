@@ -21,10 +21,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from fluke.backends import LocalBackend
-from fluke.optimize import optimize
-from fluke.schema import Schema, mutate_instructions, mutate_threshold
-from fluke.task import Example, Task, f1
+from evalfloor.backends import LocalBackend
+from evalfloor.optimize import optimize
+from evalfloor.schema import Schema, mutate_instructions, mutate_threshold
+from evalfloor.task import Example, Task, f1
 
 
 def load(n_queries=40, max_passages=6, seed=0):
