@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="Eval Floor" width="270">
+<img src="docs/logo.png" alt="EvalFloor" width="270">
 
-# Eval Floor: is your LLM eval improvement real?
+# EvalFloor: is your LLM eval improvement real?
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -15,13 +15,13 @@
 
 ---
 
-## What is Eval Floor?
+## What is EvalFloor?
 
 When you try k variants against an eval set and keep the best score, that
 score is biased upward. The maximum of k noisy measurements exceeds the true
 value even when all k variants are equally good, and the bias grows with k.
 
-Eval Floor computes that bias from the scores your tuning loop already
+EvalFloor computes that bias from the scores your tuning loop already
 produced. No model, no rerun, no dependencies.
 
 | | |
@@ -224,20 +224,5 @@ which is usually not the expensive one.
 
 **Can I use it on hyperparameter sweeps, A/B tests, model selection?**
 Yes. Anything that evaluates k options and keeps the best has this bias.
-
-## References
-
-None of the statistics here are new. The closest prior work:
-
-- Dodge et al., [Show Your Work](https://arxiv.org/abs/1909.03004) (2019):
-  report expected best-found performance as a function of search budget.
-- The winner's curse and selective inference literature, for the correction.
-
-## Development
-
-```bash
-pytest tests/ -q          # 23 tests
-python3 tools/make_floor_chart.py   # regenerate docs/floor.png
-```
 
 MIT.

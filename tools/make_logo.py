@@ -45,9 +45,9 @@ def main():
     ax.plot([x0 - 0.010, x0 + w + 0.010], [line, line], lw=2.6, color=FLOOR,
             zorder=2, solid_capstyle="round")
 
-    # Display name is two capitalised words; the package, import and CLI stay
-    # lowercase `evalfloor`, since none of them can carry a space.
-    ax.text(x0 + w + 0.045, 0.50, "Eval Floor", fontsize=44, color=INK,
+    # Display name is CamelCase; the package, import and CLI stay lowercase
+    # `evalfloor`, following PEP 8 for module names.
+    ax.text(x0 + w + 0.045, 0.50, "EvalFloor", fontsize=44, color=INK,
             fontweight="bold", va="center", family="DejaVu Sans")
     ax.set_xlim(0, 1)
     ax.set_ylim(0.40, 0.64)

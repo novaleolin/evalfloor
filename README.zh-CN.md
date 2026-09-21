@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="Eval Floor" width="270">
+<img src="docs/logo.png" alt="EvalFloor" width="270">
 
-# Eval Floor：你的 LLM 评测提升是真的吗？
+# EvalFloor：你的 LLM 评测提升是真的吗？
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -15,12 +15,12 @@
 
 ---
 
-## Eval Floor 是什么
+## EvalFloor 是什么
 
 对着评测集试 k 个变体、留下分数最高的那个，这个分数是有偏的。
 k 个带噪测量的最大值高于真实值，哪怕这 k 个变体一样好，而且偏差随 k 增长。
 
-Eval Floor 从你的调参循环已经产出的分数里算出这个偏差。
+EvalFloor 从你的调参循环已经产出的分数里算出这个偏差。
 不需要模型，不需要重跑，零依赖。
 
 | | |
@@ -204,20 +204,5 @@ RAG 示例从 F1 = 0.000 起步。打分器给每个段落 0.10 到 0.19，默�
 
 **超参搜索、A/B 测试、模型选型能用吗？**
 能。只要是"评测 k 个选项、留下最好的"，就有这个偏差。
-
-## 参考
-
-这里的统计都不是新的。最接近的先例：
-
-- Dodge et al., [Show Your Work](https://arxiv.org/abs/1909.03004)（2019）：
-  把"最优结果随搜索预算变化的期望曲线"作为应当报告的内容。
-- 胜者诅咒与选择性推断的相关文献，提供了修正方法。
-
-## 开发
-
-```bash
-pytest tests/ -q                     # 23 个测试
-python3 tools/make_floor_chart.py    # 重新生成 docs/floor.png
-```
 
 MIT 协议。
