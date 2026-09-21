@@ -1,13 +1,15 @@
 [project]
 name = "evalfloor"
 version = "0.1.0"
-description = "How many points does your eval improvement get for free? Tuning over k variants scores points on noise alone -- this tells you how many."
+description = "Is your LLM eval improvement real? Trying k prompt variants and keeping the best scores points on noise alone -- evalfloor computes how many, so you can tell a real gain from a lucky sample."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
-keywords = ["eval", "evaluation", "prompt-optimization", "winners-curse",
-            "selection-bias", "overfitting", "llm-eval", "benchmark",
-            "statistics", "rag", "agent-eval", "hyperparameter-tuning"]
+keywords = ["llm-eval", "llm-evaluation", "eval", "evaluation", "benchmark",
+            "prompt-engineering", "prompt-optimization", "prompt-tuning",
+            "selection-bias", "winners-curse", "overfitting", "significance",
+            "statistics", "ab-testing", "rag", "rag-evaluation",
+            "agent-evaluation", "hyperparameter-tuning", "model-selection"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",

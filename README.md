@@ -1,21 +1,41 @@
 <div align="center">
 
-# evalfloor
-
-**How many points does your eval improvement get for free?**
+# evalfloor: is your LLM eval improvement real?
 
 [![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
 [![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 
-Tuning over k variants scores points on noise alone. This tells you how many.
-
-[English](README.md) · [简体中文](README.zh-CN.md)
+**[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [简体中文](README.zh-CN.md)**
 
 </div>
 
 ---
+
+## What is evalfloor?
+
+Tune a prompt, a threshold, a retrieval config or an agent scaffold against an
+eval set; try k variants; keep the best. **The score goes up even when none of
+the variants is better than the others**, because the maximum of k noisy
+measurements is biased upward, and the bias grows with k.
+
+evalfloor computes that bias — the *floor* your search clears for free — so you
+can tell an improvement from a lucky sample. One line, zero dependencies, on
+numbers your tuning loop already produced.
+
+| | |
+|---|---|
+| **+7.0 points free** | 200 eval examples, 30 variants tried, no real difference between any of them |
+| **2 functions** | `check()` for the floor, `confirm()` for a paired held-out test |
+| **0 dependencies** | no model, no API key, no rerun — it reads scores you already have |
+| **Catches both errors** | tells you when a gain is fake *and* when your split is too small to say |
+
+## Quickstart
+
+```bash
+pip install evalfloor
+```
 
 You tried 30 prompts and kept the best one. The score went 0.62 → 0.69.
 
@@ -36,16 +56,6 @@ print(evalfloor.check(scores=my_30_scores, n_examples=200))
 All 6.5 points were luck. In that run every one of the 30 prompts was
 **identical by construction** — the spread was sampling noise, and the search
 found the luckiest sample.
-
-## Install
-
-```bash
-pip install evalfloor
-```
-
-Zero dependencies. Works on numbers you already have.
-
-## Quickstart
 
 ```bash
 python3 examples/quickstart.py     # 30 seconds, no downloads, no API key
@@ -182,6 +192,30 @@ binomial metric. Correlated variants or a heavy-tailed metric push the real
 floor **higher**; staged loops have their own function above. The error is
 always in the same direction: **a gain that fails this test fails it for
 certain.** A gain that passes still needs `confirm()`.
+
+## FAQ
+
+**"I tuned my prompt 30 times and accuracy went up 5 points. Is that real?"**
+Run `check()` on all 30 scores. At 200 eval examples the floor is +7.0, so a
+5-point gain is below what the search gets for free.
+
+**"How is this different from a held-out set?"**
+It is not a replacement — it is the step before. The floor tells you when a
+search has proved nothing, using only the data you already have. A held-out
+set tells you when it has proved something; `confirm()` runs that test.
+
+**"Is this just overfitting to the eval set?"**
+Same family, different mechanism. Overfitting usually means a model memorising
+examples. This is selection bias: you never fit anything, you just picked the
+maximum of several noisy measurements.
+
+**"My metric isn't accuracy."**
+`selection_floor` assumes a binomial metric. For an unbounded or heavy-tailed
+one the real floor is higher than it reports, so a failing gain still fails.
+
+**"My loop promotes candidates between cheap and expensive stages."**
+Use `staged_floor()`. The floor is usually the *cheap* stage's, not the
+expensive one you pay for — see above.
 
 ## Notes
 
