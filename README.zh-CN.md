@@ -1,13 +1,15 @@
 <div align="center">
 
-# evalfloor：你的 LLM 评测提升是真的吗？
+<img src="docs/logo.png" alt="evalfloor" width="330">
+
+### 你的 LLM 评测提升是真的吗？
 
 [![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
 [![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 
-**[五秒上手](#五秒上手) · [为什么会这样](#为什么会这样) · [API](#api) · [English](README.md)**
+**[五秒上手](#五秒上手) · [为什么会这样](#为什么会这样) · [API](#api) · [常见问题](#常见问题) · [English](README.md)**
 
 </div>
 

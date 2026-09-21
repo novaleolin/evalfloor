@@ -1,13 +1,15 @@
 <div align="center">
 
-# evalfloor: is your LLM eval improvement real?
+<img src="docs/logo.png" alt="evalfloor" width="330">
+
+### is your LLM eval improvement real?
 
 [![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
 [![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 
-**[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [简体中文](README.zh-CN.md)**
+**[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [FAQ](#faq) · [简体中文](README.zh-CN.md)**
 
 </div>
 
