@@ -1,0 +1,47 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor, the sign test and the shrinkage are arithmetic, so the
+        # whole public surface must hold on every version the package claims.
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install pytest
+      - run: pip install -e .
+      - run: pytest tests/ -q
+
+  no-heavy-deps:
+    # check() and confirm() are the front door and must stay importable with
+    # nothing installed. A stray top-level import of torch would not fail the
+    # test job above, because that job installs the package's extras-free
+    # deps and pytest only.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - run: |
+          python -c "
+          import sys, evalfloor
+          evalfloor.check([0.5, 0.6, 0.55], 200)
+          evalfloor.confirm([0, 1], [1, 1])
+          heavy = {'torch', 'transformers', 'numpy', 'pandas', 'datasets'}
+          loaded = heavy & set(sys.modules)
+          assert not loaded, f'import pulled in {loaded}'
+          print('clean import verified')
+          "
