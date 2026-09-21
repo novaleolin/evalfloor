@@ -1,13 +1,13 @@
 <div align="center">
 
-<img src="docs/logo.png" alt="evalfloor" width="330">
+<img src="docs/logo.png" alt="evalfloor" width="270">
 
-### is your LLM eval improvement real?
+# evalfloor: is your LLM eval improvement real?
 
-[![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
-[![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
+[![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
 **[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [FAQ](#faq) · [简体中文](README.zh-CN.md)**
 
@@ -36,8 +36,10 @@ numbers your tuning loop already produced.
 ## Quickstart
 
 ```bash
-pip install evalfloor
+pip install git+https://github.com/novaleolin/evalfloor.git
 ```
+
+*(PyPI release pending — `pip install evalfloor` once it lands.)*
 
 You tried 30 prompts and kept the best one. The score went 0.62 → 0.69.
 
@@ -155,7 +157,7 @@ eb_shrink(scores, n)                       # de-biased best
 ## A tuning loop that runs this on itself
 
 ```bash
-pip install "evalfloor[local]"
+pip install "evalfloor[local] @ git+https://github.com/novaleolin/evalfloor.git"
 evalfloor mydata.jsonl --kind choice --metric exact
 ```
 
