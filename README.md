@@ -56,7 +56,7 @@ print(evalfloor.check(scores=my_30_scores, n_examples=200))
 ```
 
 All 30 prompts in this example have the same true accuracy. The 6.5 point
-gain is sampling noise, and the floor says so.
+gain is sampling error, and it falls under the floor.
 
 ```bash
 python3 examples/quickstart.py     # 30 seconds, no downloads, no API key
@@ -116,9 +116,9 @@ An exact sign test over `d` disagreements cannot return a p-value below
 `2^(1-d)`, so five or fewer can never reach 0.05. `confirm()` reports this as
 UNDERPOWERED rather than as a negative result.
 
-### `staged_floor`: for cheap-then-dear loops
+### `staged_floor`: for staged evaluation
 
-Score everything on something cheap, promote survivors to something dearer,
+Score every candidate on a small set, promote the survivors to a larger one,
 report the best:
 
 ```python
@@ -194,7 +194,8 @@ The RAG example starts at F1 = 0.000. The scorer gives every passage 0.10 to
 on a 0/1 metric. Correlated candidates and heavy-tailed metrics both make the
 true floor higher than it reports. Staged loops use `staged_floor` instead.
 
-Every one of these errs the same way, so the reported floor is a lower bound.
+All of these bias it in the same direction, so the reported floor is a lower
+bound.
 A gain under it is under the true floor too. A gain over it still needs
 `confirm()`.
 
@@ -205,16 +206,16 @@ Probably not. At 200 eval examples the floor for 30 variants is +7.0. Run
 `check()` on all 30 scores to get the floor for your own numbers.
 
 **How is this different from a held-out set?**
-A held-out set shows a variant is better. The floor shows when your numbers
-cannot show anything, before you spend held-out data finding out. Use
-`check()` first and `confirm()` on whatever survives.
+A held-out set establishes that a variant is better. The floor tells you when
+your scores cannot establish anything, before you spend held-out data on them.
+Run `check()` first and `confirm()` on whatever survives.
 
 **Is this just overfitting to the eval set?**
 Nothing is fitted here. The bias comes from picking the largest of several
-noisy scores, which runs high whether or not a model was trained.
+noisy scores, which is biased upward whether or not a model was trained.
 
 **My metric isn't accuracy.**
-`selection_floor` assumes a 0/1 metric. On other metrics it under-reports, so
+`selection_floor` assumes a 0/1 metric. On other metrics it under-reports the floor, so
 a gain under the reported floor is under the true one as well.
 
 **My loop promotes candidates between cheap and expensive stages.**
