@@ -18,20 +18,20 @@
 ## What is Eval Floor?
 
 Tune a prompt, a threshold, a retrieval config or an agent scaffold against an
-eval set; try k variants; keep the best. **The score goes up even when none of
-the variants is better than the others**, because the maximum of k noisy
+eval set. Try k variants, keep the best. The score goes up even when none of
+the variants is better than the others, because the maximum of k noisy
 measurements is biased upward, and the bias grows with k.
 
-Eval Floor computes that bias — the *floor* your search clears for free — so you
-can tell an improvement from a lucky sample. One line, zero dependencies, on
-numbers your tuning loop already produced.
+Eval Floor computes that bias. It is the floor your search clears for free, so
+you can tell an improvement from a lucky sample. One line, zero dependencies,
+on numbers your tuning loop already produced.
 
 | | |
 |---|---|
 | **+7.0 points free** | 200 eval examples, 30 variants tried, no real difference between any of them |
 | **2 functions** | `check()` for the floor, `confirm()` for a paired held-out test |
-| **0 dependencies** | no model, no API key, no rerun — it reads scores you already have |
-| **Catches both errors** | tells you when a gain is fake *and* when your split is too small to say |
+| **0 dependencies** | no model, no API key, no rerun. It reads scores you already have |
+| **Catches both errors** | when a gain is fake, and when your split is too small to say |
 
 ## Quickstart
 
@@ -39,9 +39,9 @@ numbers your tuning loop already produced.
 pip install git+https://github.com/novaleolin/evalfloor.git
 ```
 
-*(PyPI release pending — `pip install evalfloor` once it lands.)*
+*(PyPI release pending. `pip install evalfloor` once it lands.)*
 
-You tried 30 prompts and kept the best one. The score went 0.62 → 0.69.
+You tried 30 prompts and kept the best one. The score went 0.62 to 0.69.
 
 ```python
 import evalfloor
@@ -57,9 +57,9 @@ print(evalfloor.check(scores=my_30_scores, n_examples=200))
   BELOW THE FLOOR -- this search has not shown anything
 ```
 
-All 6.5 points were luck. In that run every one of the 30 prompts was
-**identical by construction** — the spread was sampling noise, and the search
-found the luckiest sample.
+All 6.5 points were luck. In that run all 30 prompts were identical by
+construction. The spread was sampling noise, and the search found the
+luckiest sample.
 
 ```bash
 python3 examples/quickstart.py     # 30 seconds, no downloads, no API key
@@ -67,7 +67,7 @@ python3 examples/quickstart.py     # 30 seconds, no downloads, no API key
 
 Two tuning sessions that look the same from outside. In one, every variant is
 identical and the gain is pure luck. In the other, one variant is genuinely
-better. **From the final score alone you cannot tell them apart.**
+better. From the final score alone you cannot tell them apart.
 
 ## Why this happens
 
@@ -84,20 +84,20 @@ options are identical. The more you try, the higher it goes.
 | 500 | +2.6 | +3.4 | +4.5 | +5.5 |
 | 2000 | +1.3 | +1.7 | +2.2 | +2.7 |
 
-200 eval examples and 30 variants is a normal Tuesday. That row is **+7.0**.
+200 eval examples and 30 variants is a normal Tuesday. That row is +7.0.
 
 ## Usage
 
-### `check` — how much of your best score is luck
+### `check`: how much of your best score is luck
 
 ```python
 evalfloor.check(scores, n_examples)          # scores = every variant you tried
 ```
 
-Pass **every** variant, not just the winner. The number of variants is half
-of what sets the floor.
+Pass every variant, not just the winner. The number of variants is half of
+what sets the floor.
 
-### `confirm` — does the winner hold up on data it wasn't chosen on
+### `confirm`: does the winner hold up on data it wasn't chosen on
 
 ```python
 evalfloor.confirm(baseline_correct, winner_correct)   # per-example, True/False
@@ -115,17 +115,17 @@ It also tells you when you simply don't have enough data:
                   one-sided. Your held-out split is too small. Add examples.
 ```
 
-Most tools print "no improvement" there. That's wrong — it isn't that the
-change failed, it's that you can't tell yet.
+Most tools print "no improvement" there. That's wrong. The change didn't
+fail, you just can't tell yet.
 
-### `staged_floor` — for cheap-then-dear loops
+### `staged_floor`: for cheap-then-dear loops
 
 Score everything on something cheap, promote survivors to something dearer,
 report the best:
 
 ```python
 evalfloor.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
-                   k=30, p=0.20, nested=True)
+                       k=30, p=0.20, nested=True)
 ```
 ```
   selection floor       +0.110
@@ -138,9 +138,9 @@ evalfloor.staged_floor(stages=[(10, 0.0), (60, 0.40), (200, None)],
   That is not the 200-example stage you pay for.
 ```
 
-The gate is 40% and the candidates are worth 20%, so **almost nothing is ever
-promoted**. The floor is the cheap stage's **+0.110**, not the 200-example
-stage's +0.059. The stricter your gate, the more this bites.
+The gate is 40% and the candidates are worth 20%, so almost nothing is ever
+promoted. The floor is the cheap stage's +0.110, not the 200-example stage's
++0.059. The stricter your gate, the more this bites.
 
 ### API
 
@@ -161,10 +161,10 @@ pip install "evalfloor[local] @ git+https://github.com/novaleolin/evalfloor.git"
 evalfloor mydata.jsonl --kind choice --metric exact
 ```
 
-Optimizes a typed decision schema — instruction text, option descriptions,
-which fields go into the state, thresholds — and prints the floor and the
-held-out test as part of its output. Runs on a small local model by default:
-no API key, no cost.
+Optimizes a typed decision schema (instruction text, option descriptions,
+which fields go into the state, thresholds) and prints the floor and the
+held-out test as part of its output. Runs on a small local model by default,
+so there is no API key and no cost.
 
 ```bash
 python3 examples/banking77_intent.py    # ticket routing
@@ -183,19 +183,19 @@ Ticket routing, real output:
   verdict: CREDIBLE
 ```
 
-The training number proved nothing; the held-out number is the whole case. A
+The training number proved nothing. The held-out number is the whole case. A
 tool printing only the first block would have called this a win.
 
-RAG relevance starts at **F1 = 0.000** — the default `0.5` threshold everyone
-ships sits above every score the model produces. Search finds 0.286.
+RAG relevance starts at F1 = 0.000, because the default `0.5` threshold
+everyone ships sits above every score the model produces. Search finds 0.286.
 
 ## Limits
 
 `selection_floor` assumes independent candidates, one evaluation each, and a
 binomial metric. Correlated variants or a heavy-tailed metric push the real
-floor **higher**; staged loops have their own function above. The error is
-always in the same direction: **a gain that fails this test fails it for
-certain.** A gain that passes still needs `confirm()`.
+floor higher; staged loops have their own function above. The error is always
+in the same direction, so a gain that fails this test fails it for certain. A
+gain that passes still needs `confirm()`.
 
 ## FAQ
 
@@ -204,26 +204,26 @@ Run `check()` on all 30 scores. At 200 eval examples the floor is +7.0, so a
 5-point gain is below what the search gets for free.
 
 **"How is this different from a held-out set?"**
-It is not a replacement — it is the step before. The floor tells you when a
+It isn't a replacement, it's the step before. The floor tells you when a
 search has proved nothing, using only the data you already have. A held-out
-set tells you when it has proved something; `confirm()` runs that test.
+set tells you when it has proved something, and `confirm()` runs that test.
 
 **"Is this just overfitting to the eval set?"**
-Same family, different mechanism. Overfitting usually means a model memorising
-examples. This is selection bias: you never fit anything, you just picked the
-maximum of several noisy measurements.
+Same family, different mechanism. Overfitting usually means a model
+memorising examples. This is selection bias: you never fit anything, you just
+picked the maximum of several noisy measurements.
 
 **"My metric isn't accuracy."**
 `selection_floor` assumes a binomial metric. For an unbounded or heavy-tailed
 one the real floor is higher than it reports, so a failing gain still fails.
 
 **"My loop promotes candidates between cheap and expensive stages."**
-Use `staged_floor()`. The floor is usually the *cheap* stage's, not the
-expensive one you pay for — see above.
+Use `staged_floor()`. The floor is usually the cheap stage's, not the
+expensive one you pay for. See above.
 
 ## Notes
 
-The statistics are old — winner's curse, selective inference, expected
+The statistics are old: winner's curse, selective inference, expected
 best-of-k. What's here is one line to get the number for your own run.
 
 ```bash
