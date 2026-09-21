@@ -1,6 +1,6 @@
 [project]
 name = "evalfloor"
-version = "0.1.0"
+version = "0.1.1"
 description = "EvalFloor: is your LLM eval improvement real? Trying k prompt variants and keeping the best scores points on noise alone -- this computes how many, so you can tell a real gain from a lucky sample."
 readme = "README.md"
 license = "MIT"
@@ -14,7 +14,17 @@ keywords = ["llm-eval", "llm-evaluation", "eval", "evaluation", "benchmark",
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Testing",
+  # shields.io reads the pyversions badge from these, not from
+  # requires-python, and renders "missing" without them.
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = []
 

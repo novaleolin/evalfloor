@@ -10,7 +10,7 @@ is the same machinery applied to itself, and needs the extras.
 from .check import (Check, Confirm, StagedFloor, check, confirm, eb_shrink,
                     selection_floor, staged_floor)
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = ["check", "confirm", "Check", "Confirm", "selection_floor",
            "eb_shrink", "staged_floor", "StagedFloor"]
 
