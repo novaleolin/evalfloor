@@ -4,8 +4,8 @@
 
 # EvalFloor: is your LLM eval improvement real?
 
-[![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
-[![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
+[![PyPI](https://img.shields.io/pypi/v/evalfloor?logo=pypi&logoColor=white)](https://pypi.org/project/evalfloor/)
+[![Python](https://img.shields.io/pypi/pyversions/evalfloor?logo=python&logoColor=white)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
