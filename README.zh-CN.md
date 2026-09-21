@@ -4,9 +4,9 @@
 
 # EvalFloor：你的 LLM 评测提升是真的吗？
 
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
+[![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
+[![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
 **[五秒上手](#五秒上手) · [为什么会这样](#为什么会这样) · [API](#api) · [常见问题](#常见问题) · [English](README.md)**
@@ -33,10 +33,8 @@ EvalFloor 从你的调参循环已经产出的分数里算出这个偏差。
 ## 五秒上手
 
 ```bash
-pip install git+https://github.com/novaleolin/evalfloor.git
+pip install evalfloor
 ```
-
-*（PyPI 发布中，上线后可直接 `pip install evalfloor`。）*
 
 你试了 30 个 prompt，留下分数最高的那个。分数从 0.62 涨到 0.69。
 
@@ -144,7 +142,7 @@ eb_shrink(scores, n)                       # 去偏后的最优值
 ## Schema 优化器（可选）
 
 ```bash
-pip install "evalfloor[local] @ git+https://github.com/novaleolin/evalfloor.git"
+pip install "evalfloor[local]"
 evalfloor mydata.jsonl --kind choice --metric exact
 ```
 

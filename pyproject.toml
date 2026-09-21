@@ -3,7 +3,8 @@ name = "evalfloor"
 version = "0.1.0"
 description = "EvalFloor: is your LLM eval improvement real? Trying k prompt variants and keeping the best scores points on noise alone -- this computes how many, so you can tell a real gain from a lucky sample."
 readme = "README.md"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.9"
 keywords = ["llm-eval", "llm-evaluation", "eval", "evaluation", "benchmark",
             "prompt-engineering", "prompt-optimization", "prompt-tuning",
@@ -13,7 +14,6 @@ keywords = ["llm-eval", "llm-evaluation", "eval", "evaluation", "benchmark",
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = []

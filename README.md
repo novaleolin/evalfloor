@@ -4,9 +4,9 @@
 
 # EvalFloor: is your LLM eval improvement real?
 
-[![Python](https://img.shields.io/badge/python-3.9%2B-blue)](pyproject.toml)
+[![PyPI](https://img.shields.io/pypi/v/evalfloor)](https://pypi.org/project/evalfloor/)
+[![Python](https://img.shields.io/pypi/pyversions/evalfloor)](https://pypi.org/project/evalfloor/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)](tests/)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](pyproject.toml)
 
 **[Quickstart](#quickstart) · [Why](#why-this-happens) · [API](#api) · [FAQ](#faq) · [简体中文](README.zh-CN.md)**
@@ -34,10 +34,8 @@ produced. No model, no rerun, no dependencies.
 ## Quickstart
 
 ```bash
-pip install git+https://github.com/novaleolin/evalfloor.git
+pip install evalfloor
 ```
-
-*(PyPI release pending. `pip install evalfloor` once it lands.)*
 
 You tried 30 prompts and kept the best one. The score went 0.62 to 0.69.
 
@@ -155,7 +153,7 @@ eb_shrink(scores, n)                       # de-biased best
 ## Schema optimizer (optional)
 
 ```bash
-pip install "evalfloor[local] @ git+https://github.com/novaleolin/evalfloor.git"
+pip install "evalfloor[local]"
 evalfloor mydata.jsonl --kind choice --metric exact
 ```
 
